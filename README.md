@@ -106,7 +106,7 @@ figures rather than duplicating them here.
 
 ## Tools and commands
 
-Model-facing tools (11):
+Model-facing tools (14):
 
 | Tool | Purpose |
 |---|---|
@@ -118,6 +118,9 @@ Model-facing tools (11):
 | `soul_reflect` | Consolidate experiences into themes, patterns, corrections. |
 | `soul_evaluate` | Score an exchange against the domain rubric. |
 | `soul_learn` | Distil a lesson when a score is notable (≥80% or ≤30%). |
+| `soul_engine` | Cognitive-engine health: active tiers, degradation, breakers, budget, usage/cost, audit status. Read-only. |
+| `soul_config` | Read or change runtime config. Writes go through `configure()` → `rebuildEngine()` atomically — the in-process path a config-file edit cannot take. |
+| `soul_admin` | `dream`, `learning`, `evaluation`, `list`, `switch`, `birth`, `export`, `import`, `engine_reset`. |
 | `soul_observe` (codemode) | Run an external exchange through the full pipeline. |
 | `soul_skills` (codemode) | Portable skill history (domains, XP, level, evidence). |
 | `soul_evolve` (codemode) | Propose/manage personality mutations (approval by default). |
@@ -126,6 +129,11 @@ User-facing commands (18): `/soul`, `/soul-list`, `/soul-birth`, `/soul-switch`,
 `/soul-remember`, `/soul-forget`, `/soul-reflect`, `/soul-dream`, `/soul-engine`, `/soul-learning`,
 `/soul-evaluate`, `/soul-evolve`, `/soul-approve`, `/soul-reject`, `/soul-export`, `/soul-import`,
 `/soul-config`.
+
+**Parity:** every command above except the `/soul` overlay panel has a model-facing tool with the
+same or stricter behaviour, so soul operations can be requested in plain conversation rather than
+typed by hand. This is enforced by a test (`tests/admin-tools.test.ts`) that fails when a new command
+ships without a tool.
 
 ## Where your data lives
 
@@ -147,7 +155,7 @@ suffix). Do not share a `.soul` file without explicit permission.
 ## Verification / repeatability
 
 ```bash
-npm test                 # 114 tests, zero dependencies installed
+npm test                 # 119 tests, zero dependencies installed
 npm install              # enables the full upstream-schema conformance check
 npm run verify           # runs the whole verification script
 node scripts/shs.ts <soul-dir-or-.soul-file>   # Soul Health Score (7 dimensions)

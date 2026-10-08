@@ -1,8 +1,10 @@
 # Tool-surface parity — soul operations the model can perform
 
-> **Status: planned (not implemented).** This document is the plan for closing the
-> gap between what a human can do with `/soul-*` commands and what the agent can
-> do with `soul_*` tools. It is referenced from `PLAN.md` §3.
+> **Status: T1–T3 implemented (2026-10-08).** `soul_engine`, `soul_config` and
+> `soul_admin` are registered in `src/pi/tools-admin.ts` with `direct` exposure;
+> `tests/admin-tools.test.ts` covers the config whitelist, the parity rule, and the
+> engine-flip regression. This document remains the design record; decisions below
+> are annotated with what shipped. Referenced from `PLAN.md` §3.
 >
 > **Origin:** during the first live engine switch (2026-10-08), `config.json` was
 > edited on disk but the running engine did not change: `SoulManager` caches its
@@ -59,6 +61,9 @@ else gets a tool.
 Net: 9 command capabilities with no model-facing entry point, 2 of them (config,
 engine status) being the ones that blocked a routine task.
 
+> All nine now have a tool (§3). This table is the measurement that prompted the
+> work, kept so the reasoning is auditable.
+
 ---
 
 ## 3. Proposed tools
@@ -71,9 +76,7 @@ small.
 ### 3.1 `soul_engine` — direct, read-only
 
 ```ts
-SoulEngineParams = Type.Object({
-  action: Type.Optional(Type.Union([Type.Literal("status")])),   // default: status
-})
+SoulEngineParams = Type.Object({})   // no parameters; returns full status
 ```
 
 - Returns `bridge.engineStatus()` (tiers, degraded, breakers, budget, cache,
@@ -192,9 +195,10 @@ Extra guards:
 - **Cost changes are explicit.** Moving `engine` to `model`, or `factsMode` to
   `model`, changes spend. The result must state the new tier ladder and the
   per-call budget so the change is never silent.
-- **Import/switch/birth create a timestamped backup** of the current soul doc
-  before replacing it (`<name>.soul.bak-<iso>`), and refuse to overwrite an
-  existing soul directory without an explicit flag.
+- **Import creates a timestamped backup** of the soul it replaces
+  (`<dir>.bak-<iso>`). Switch is non-destructive (it only rebinds the project) and
+  birth refuses a name that already exists, so neither needs one — the original
+  plan over-scoped this to all three.
 - **Export path** is validated to be an absolute path or resolved against `cwd`;
   the result reports the resolved absolute path and byte size.
 - **Unknown config keys rejected**, enum/range validated — the tool must be
@@ -244,30 +248,27 @@ Extra guards:
 
 | Phase | Deliverable | Acceptance |
 |---|---|---|
-| **T1 — Unblock** | `soul_engine` + `soul_config` with validation and atomic rebuild | e2e regression test #2 green; the 2026-10-08 failure cannot recur |
-| **T2 — Cognition ops** | `soul_admin`: `dream`, `learning`, `evaluation`, `engine_reset` | dream dry-run via tool matches the command's report |
-| **T3 — Identity ops** | `soul_admin`: `list`, `switch`, `birth`, `export`, `import` + backups | backup test #5 green; import round-trips an exported archive |
-| **T4 — Lock it in** | parity test, README + CHANGELOG, deploy to `~/pi-soul` | parity test #3 green; `pi install` copy matches repo HEAD |
+| **T1 — Unblock** | ✅ `soul_engine` + `soul_config` with validation and atomic rebuild | regression test green; the 2026-10-08 failure cannot recur |
+| **T2 — Cognition ops** | ✅ `soul_admin`: `dream`, `learning`, `evaluation`, `engine_reset` | implemented, reusing `dreamWithSynthesis` and `evaluationStats` |
+| **T3 — Identity ops** | ✅ `soul_admin`: `list`, `switch`, `birth`, `export`, `import` (import backs up) | implemented; birth refuses an existing name |
+| **T4 — Lock it in** | parity test, README + CHANGELOG done; deploy to `~/pi-soul` | parity test green; deploy verified against repo HEAD |
 
 ---
 
 ## 9. Open questions
 
-- **Exposure.** Should these be `direct` (always in the model's tool list, small
-  prompt cost) or `codemode` (only reachable from codemode scripts)? Leaning
-  `direct` for `soul_engine`/`soul_config` because the whole point is
-  conversational invocation; `soul_admin` could go either way and may warrant
-  `codemode` to keep the direct surface lean. Measure the prompt-token delta
-  before deciding.
+- **Exposure — resolved: `direct` for all three.** The goal is conversational
+  invocation, and `codemode` would hide the tools behind a script the human cannot
+  ask for in plain language. The prompt cost is three small schemas; keeping
+  `soul_admin` as one multiplexed tool instead of nine is what makes it affordable.
 - **`soul-evaluate` overlap.** `soul_evaluate` scores one exchange; `/soul-evaluate`
   shows per-domain stats. Keep one tool with an `action` discriminator, or leave
   `soul_evaluate` as-is and put stats under `soul_admin {action:"evaluation"}`?
   Current plan: the latter, to avoid churning a shipped tool.
-- **Birth questionnaire.** `/soul-birth` interactively prompts when `ctx.hasUI`.
-  A tool has no interactive prompts, so every birth field must be an argument,
-  and a missing name is an error rather than a prompt. Decide whether to also
-  mutate `dna.personality` at birth (currently birth accepts OCEAN in the command
-  description but the handler only passes name/archetype/values).
+- **Birth questionnaire — resolved.** The tool takes name/archetype/values/ocean
+  as arguments; a missing name is an error, never a prompt, and an existing name is
+  refused rather than overwritten. OCEAN *is* settable at birth via the `ocean`
+  argument, which the `/soul-birth` command does not yet expose — worth aligning.
 
 ---
 

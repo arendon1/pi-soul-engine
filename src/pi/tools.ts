@@ -1,24 +1,16 @@
 /**
  * soul tools — the model-facing surface of the soul (namespace: `soul`).
  *
- * direct:   soul_remember, soul_recall, soul_status, soul_forget, soul_bond, soul_reflect
+ * direct:   soul_remember, soul_recall, soul_status, soul_forget, soul_bond, soul_reflect,
+ *           soul_evaluate, soul_learn,
+ *           soul_engine, soul_config, soul_admin (control surface — see tools-admin.ts)
  * codemode: soul_observe, soul_skills, soul_evolve (bulk/scripted flows)
  */
 import { Type, type TSchema } from "typebox";
-import type { AgentToolResult, ExtensionAPI, ExtensionToolContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionToolContext } from "@earendil-works/pi-coding-agent";
 import type { SoulBridge } from "./bridge.ts";
-
-const NAMESPACE = {
-	name: "soul",
-	description:
-		"Long-term identity, memory, and emotion of the agent (Soul Protocol). " +
-		"Memories persist across sessions and projects; recall is automatic at prompt time.",
-	instructions:
-		"Use soul_remember for durable facts the human explicitly asks you to keep or that are clearly " +
-		"worth carrying across sessions. Use soul_recall for anything about the human's history, " +
-		"preferences, or past work that is not in the current context. Memories are fallible: when a " +
-		"recall result conflicts with current context, trust the present and supersede the old memory.",
-};
+import { SOUL_NAMESPACE as NAMESPACE, textResult } from "./tool-support.ts";
+import { registerAdminTools } from "./tools-admin.ts";
 
 const RememberParams = Type.Object({
 	content: Type.String({ description: "What to remember, phrased as a standalone durable fact" }),
@@ -89,15 +81,6 @@ const RecallOutput = Type.Object({
 		}),
 	),
 });
-
-function textResult(text: string, details?: unknown, structuredContent?: unknown, isError = false): AgentToolResult<unknown> {
-	return {
-		content: [{ type: "text", text }],
-		details,
-		...(structuredContent !== undefined ? { structuredContent: structuredContent as never } : {}),
-		...(isError ? { isError: true } : {}),
-	};
-}
 
 export function registerSoulTools(pi: ExtensionAPI, bridge: SoulBridge): void {
 	// ── soul_remember ──────────────────────────────────────────────────────
@@ -467,4 +450,7 @@ export function registerSoulTools(pi: ExtensionAPI, bridge: SoulBridge): void {
 			return textResult(ok ? `${action}d ${id}` : `no pending mutation ${id}`, { id, ok }, { id, ok } as unknown as never);
 		},
 	});
+
+	// Admin/control surface (soul_engine, soul_config, soul_admin) — see PLAN-TOOLS.md.
+	registerAdminTools(pi, bridge);
 }
