@@ -56,6 +56,8 @@ resilient cognitive engine, published as an installable Pi package.
 - 11 model-facing tools, 18 `/soul*` commands, 2 skills, 3 prompt templates.
 - Detached worker child process owning persistence and heavy crypto, so the
   agent loop is never blocked; pending-observation journal for crash safety.
+- `scripts/deploy.sh`: one-way, idempotent sync from this source repository into
+  a deployment directory (dry run by default, `--apply` to write).
 - Non-intrusive notifications: transcript entries with renderers plus rare,
   configurable toasts.
 

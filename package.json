@@ -49,6 +49,7 @@
 		"test:core": "node --test tests/spec.test.ts tests/runtime.test.ts tests/cognition.test.ts",
 		"test:engine": "node --test tests/resilience.test.ts tests/perf.test.ts",
 		"verify": "bash scripts/verify.sh",
+		"deploy": "bash scripts/deploy.sh",
 		"shs": "node scripts/shs.ts"
 	},
 	"peerDependencies": {

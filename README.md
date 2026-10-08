@@ -37,6 +37,23 @@ Installing the package adds, from the `pi` manifest: **1 extension**
 (`src/pi/extension.ts`), **2 skills** (`skills/soul-memory`, `skills/soul-file`), and **3 prompt
 templates** (`prompts/remember.md`, `prompts/recall.md`, `prompts/soul-report.md`).
 
+### Deploying from source
+
+This repository is the **source upstream**. An installed copy is a *deployment* derived from it —
+the two are never edited independently:
+
+```bash
+bash scripts/deploy.sh                      # dry run: show what would change
+bash scripts/deploy.sh --apply              # sync tracked files into ~/pi-soul
+bash scripts/deploy.sh --apply --with-npm   # ...and install devDependencies there
+export PI_SOUL_DEPLOY_DIR=/path/to/deploy   # or --target DIR to deploy elsewhere
+```
+
+The sync is one-way from `git archive HEAD` and idempotent: it refuses a dirty tree, refuses to
+clear a directory that does not look like a soul deployment, and preserves `node_modules`,
+`package-lock.json` and anything else it does not own. Managed paths are cleared first, so files
+deleted upstream actually disappear from the deployment.
+
 ## What it does
 
 The soul is wired into Pi's lifecycle and is **fire-and-forget**: no handler ever awaits soul work, so
