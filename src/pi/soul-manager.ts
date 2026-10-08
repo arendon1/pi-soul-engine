@@ -51,6 +51,8 @@ export interface SoulManagerConfig {
 	recallLimit: number;
 	/** Token budget for injected soul sections. */
 	promptBudget: number;
+	/** Observations between automatic reflections (default 8). */
+	reflectEvery: number;
 	/** Non-intrusive toasts for background soul activity (default true). */
 	notifications: boolean;
 	resilience: {
@@ -79,6 +81,7 @@ const DEFAULT_CONFIG: SoulManagerConfig = {
 	recallLimit: 5,
 	promptBudget: 400,
 	notifications: true,
+	reflectEvery: 8,
 	resilience: {
 		retries: 1,
 		timeoutMs: { analysis: 20_000, reflect: 60_000, dream: 120_000 },

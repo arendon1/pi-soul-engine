@@ -27,6 +27,7 @@ export default function soulExtension(pi: ExtensionAPI): void {
 	if (process.env.PI_SOUL_REFLECT_MODEL) bridge.manager.configure({ reflectModel: process.env.PI_SOUL_REFLECT_MODEL });
 	if (process.env.PI_SOUL_ENGINE === "heuristic") bridge.manager.configure({ engine: "heuristic" });
 	if (process.env.PI_SOUL_FACTS === "heuristic") bridge.manager.configure({ factsMode: "heuristic" });
+	if (process.env.PI_SOUL_REFLECT_EVERY) bridge.manager.configure({ reflectEvery: Number(process.env.PI_SOUL_REFLECT_EVERY) });
 
 	// Ship skills + prompt templates even when loaded as a bare extension file.
 	const packageRoot = dirname(dirname(fileURLToPath(import.meta.url))); // src/pi → package root

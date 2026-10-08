@@ -27,7 +27,7 @@ import type {
 import type { SoulBridge } from "./bridge.ts";
 import { applySoulSections } from "./injection.ts";
 
-const REFLECT_EVERY = 8; // observations between automatic reflections
+// Reflection cadence is configurable (config.reflectEvery, default 8).
 
 /** Pull the user prompt + final assistant text out of an agent run. */
 export function exchangeOf(event: AgentEndEvent): { userText: string; agentText: string } | null {
@@ -104,7 +104,7 @@ export function registerSoulLifecycle(pi: ExtensionAPI, bridge: SoulBridge): voi
 		// quietly in the background and reports through a toast at most.
 		void event;
 		if (!bridge.hasSoul()) return;
-		if (bridge.observationsSinceReflect < REFLECT_EVERY) return;
+		if (bridge.observationsSinceReflect < bridge.manager.getConfig().reflectEvery) return;
 		const signal = ctx.signal ?? undefined;
 		void (async () => {
 			try {
