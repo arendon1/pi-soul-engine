@@ -44,6 +44,11 @@ export class SkillRegistry {
 		return this.award(name, domain, amount);
 	}
 
+	/** Remove a skill entirely. Returns true when it existed. (Maintenance.) */
+	remove(name: string): boolean {
+		return this.skills.delete(name);
+	}
+
 	/**
 	 * Grant XP from a LearningEvent (port of `SkillRegistry.grant_xp_from_learning`):
 	 *   xp = max(1, int(20 × (0.5 + score) × confidence))

@@ -90,6 +90,7 @@ const AdminParams = Type.Object({
 			Type.Literal("export"),
 			Type.Literal("import"),
 			Type.Literal("engine_reset"),
+			Type.Literal("prune_entities"),
 		],
 		{ description: "Which soul operation to perform" },
 	),
@@ -102,6 +103,11 @@ const AdminParams = Type.Object({
 	ocean: Type.Optional(OceanParams),
 	path: Type.Optional(Type.String({ description: "export | import: .soul archive path (relative paths resolve against cwd)" })),
 	password: Type.Optional(Type.String({ description: "export | import: AES-256-GCM password" })),
+	keep: Type.Optional(
+		Type.Array(Type.String(), {
+			description: "prune_entities: entity/skill names to preserve (self-model domains are kept regardless)",
+		}),
+	),
 });
 
 // ── pure helpers ─────────────────────────────────────────────────────────────
@@ -241,7 +247,8 @@ export function registerAdminTools(pi: ExtensionAPI, bridge: SoulBridge): void {
 			"Manage soul operations that have no other model-facing entry point: dream (offline " +
 			"consolidation), learning (distilled lessons), evaluation (per-domain scores), list/switch/" +
 			"birth (multi-soul management), export/import (.soul archives), engine_reset (clear " +
-			"breakers and counters). Import backs up the soul it replaces.",
+			"breakers and counters), prune_entities (remove junk entities/skills; dry_run previews). " +
+			"Import backs up the soul it replaces.",
 		promptSnippet: "Run soul management operations",
 		parameters: AdminParams,
 		exposure: "direct",
@@ -378,6 +385,24 @@ export function registerAdminTools(pi: ExtensionAPI, bridge: SoulBridge): void {
 					}
 					bridge.routerRef.resetResilience();
 					return textResult("Engine resilience state reset (breakers, counters, budget).", { ok: true });
+				}
+
+				case "prune_entities": {
+					const dryRun = params.dry_run ?? false;
+					const result = soul.pruneEntities({ keep: params.keep ?? [], dryRun });
+					const sample = (xs: string[], n = 12): string =>
+						xs.slice(0, n).join(", ") + (xs.length > n ? ` … (+${xs.length - n} more)` : "");
+					const lines = [
+						`${dryRun ? "would remove" : "removed"}: ${result.graphRemoved.length} graph entities · ` +
+							`${result.memoryTagsRemoved} memory entity tags · ${result.skillsRemoved.length} skills`,
+						result.graphRemoved.length ? `  graph: ${sample(result.graphRemoved)}` : "",
+						result.skillsRemoved.length ? `  skills: ${sample(result.skillsRemoved)}` : "",
+						dryRun
+							? "dry run — nothing written; call again without dry_run to apply"
+							: "applied (self-model domains are always kept)",
+					].filter(Boolean);
+					if (!dryRun) bridge.manager.markDirty();
+					return textResult(lines.join("\n"), { ...result, dryRun });
 				}
 			}
 		},

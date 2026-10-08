@@ -16,8 +16,8 @@ version **1.0.0** (upstream Soul Protocol).
   `soul:config` transcript entries; a requested-but-unresolved model tier is
   reported as a warning instead of a silent success.
 - `soul_admin` (direct): `dream`, `learning`, `evaluation`, `list`, `switch`,
-  `birth`, `export`, `import`, `engine_reset`. Import backs up the soul it
-  replaces; birth refuses an existing name.
+  `birth`, `export`, `import`, `engine_reset`, `prune_entities` (with `keep` and
+  `dry_run`). Import backs up the soul it replaces; birth refuses an existing name.
 - Command↔tool parity is enforced by `tests/admin-tools.test.ts`: every `/soul-*`
   command except the `/soul` overlay must map to a registered tool.
 
@@ -26,6 +26,19 @@ version **1.0.0** (upstream Soul Protocol).
   tested) and the namespace/result helpers to `src/pi/tool-support.ts`, so
   `tools.ts` and `tools-admin.ts` share one definition instead of drifting.
 - `soulSlug` is exported from `soul-manager.ts` for name normalisation by tools.
+
+### Fixed — entity corruption in early souls
+- Heuristic entity extraction no longer treats sentence-initial or common English
+  words as entities, skips spans under three characters, and no longer matches
+  across newlines (which had produced a graph node literally named
+  `Projects\nDone`). The capitalized-word heuristic is a fallback; the model tiers
+  do this properly.
+- Entity-derived skill XP is awarded only for non-person entities, so `What` and
+  `Here` no longer become "competencies".
+- `Soul.pruneEntities({ keep, dryRun })` and `SkillRegistry.remove()` remediate
+  souls already corrupted by the two bugs above. Exposed as
+  `soul_admin { action: "prune_entities" }`; self-model domains always survive, so
+  `research_aide` is kept while `Knob` is removed.
 
 ## [0.2.0] — 2026-10-08
 

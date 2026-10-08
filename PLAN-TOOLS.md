@@ -279,6 +279,8 @@ Extra guards:
 - No change to the human-approval default for evolution (`require_approval: true`
   stays; `soul_evolve` already exposes approve/reject).
 - The entity→skill mapping bug found during this investigation
-  (`src/runtime/soul.ts:434`, every extracted entity awarded skill XP) is a
-  **separate** defect with its own plan; it is noted here only because it was
-  found while auditing the surface.
+  (`src/runtime/soul.ts`, every extracted entity awarded skill XP) is addressed
+  in the same change set: the award is now restricted to non-person entities,
+  heuristic extraction rejects sentence-initial stopwords, and
+  `Soul.pruneEntities()` (via `soul_admin {action:"prune_entities"}`) removes
+  what accumulated before the fix.

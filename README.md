@@ -120,7 +120,7 @@ Model-facing tools (14):
 | `soul_learn` | Distil a lesson when a score is notable (≥80% or ≤30%). |
 | `soul_engine` | Cognitive-engine health: active tiers, degradation, breakers, budget, usage/cost, audit status. Read-only. |
 | `soul_config` | Read or change runtime config. Writes go through `configure()` → `rebuildEngine()` atomically — the in-process path a config-file edit cannot take. |
-| `soul_admin` | `dream`, `learning`, `evaluation`, `list`, `switch`, `birth`, `export`, `import`, `engine_reset`. |
+| `soul_admin` | `dream`, `learning`, `evaluation`, `list`, `switch`, `birth`, `export`, `import`, `engine_reset`, `prune_entities`. |
 | `soul_observe` (codemode) | Run an external exchange through the full pipeline. |
 | `soul_skills` (codemode) | Portable skill history (domains, XP, level, evidence). |
 | `soul_evolve` (codemode) | Propose/manage personality mutations (approval by default). |

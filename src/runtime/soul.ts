@@ -428,9 +428,12 @@ export class Soul {
 			this.skills.award(domain, domain, 10);
 		}
 
-		// Skills: entity topics earn significance-weighted XP (upstream parity)
+		// Skills: entity topics earn significance-weighted XP (upstream parity).
+		// Only non-person entities count — treating "What"/"Here" as personal
+		// competencies is how the skill list filled with sentence-initial words.
 		const entityXp = Math.max(5, Math.round(result.significance * 30));
 		for (const entity of result.entities) {
+			if (entity.entity_type === "person") continue;
 			this.skills.addXp(domainSlug(entity.name), entity.name, entityXp);
 		}
 
@@ -597,6 +600,73 @@ export class Soul {
 		}
 		this.recordAction("memory.forget", { mode: "before", timestamp, removed: removed.map((e) => e.id) });
 		return removed;
+	}
+
+	/**
+	 * Maintenance: remove entity records that are not on a keep-list.
+	 *
+	 * The heuristic entity extractor once treated *any* capitalised word as an
+	 * entity, and every entity earned skill XP — so an early soul fills with
+	 * graph nodes and "skills" named `What`, `Here`, `Knob`. This removes them
+	 * from the graph, from memory entity tags, and from skills. Skills that are
+	 * self-model domains (the legitimate ones) always survive, which is what
+	 * separates `research_aide` from `Knob`.
+	 *
+	 * Memory entries are edited in place: `store.all()` hands back the stored
+	 * objects, and `MemoryStore.store()` only ever appends, so it cannot update.
+	 * Pass `dryRun` to preview without mutating.
+	 */
+	pruneEntities(options: { keep?: string[]; dryRun?: boolean } = {}): {
+		graphRemoved: string[];
+		memoryTagsRemoved: number;
+		skillsRemoved: string[];
+	} {
+		const keep = new Set((options.keep ?? []).map((k) => k.trim().toLowerCase()).filter(Boolean));
+		const domains = new Set(Object.keys(this.selfModel.self_images));
+		const isKept = (name: string): boolean => {
+			const key = name.trim().toLowerCase();
+			return keep.has(key) || domains.has(key);
+		};
+
+		// Graph nodes, then the edges that pointed at them.
+		const graphRemoved: string[] = [];
+		for (const [key, node] of Object.entries(this.graph.entities)) {
+			const name = node.name ?? key;
+			if (isKept(name)) continue;
+			graphRemoved.push(name);
+			if (!options.dryRun) delete this.graph.entities[key];
+		}
+		if (!options.dryRun && graphRemoved.length > 0) {
+			const gone = new Set(graphRemoved);
+			for (const node of Object.values(this.graph.entities)) {
+				node.relationships = node.relationships.filter((r) => !gone.has(r.target));
+			}
+		}
+
+		let memoryTagsRemoved = 0;
+		for (const entry of this.store.all()) {
+			const kept = entry.entities.filter(isKept);
+			if (kept.length === entry.entities.length) continue;
+			memoryTagsRemoved += entry.entities.length - kept.length;
+			if (!options.dryRun) entry.entities = kept;
+		}
+
+		const skillsRemoved: string[] = [];
+		for (const skill of this.skills.list()) {
+			if (isKept(skill.name)) continue;
+			skillsRemoved.push(skill.name);
+			if (!options.dryRun) this.skills.remove(skill.name);
+		}
+
+		if (!options.dryRun) {
+			this.recordAction("maintenance.prune_entities", {
+				keep: [...keep],
+				graphRemoved: graphRemoved.length,
+				memoryTagsRemoved,
+				skillsRemoved: skillsRemoved.length,
+			});
+		}
+		return { graphRemoved, memoryTagsRemoved, skillsRemoved };
 	}
 
 	// ── emotional state & bond ─────────────────────────────────────────────

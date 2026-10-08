@@ -42,6 +42,37 @@ const DOMAIN_HINTS: Array<{ domain: string; words: string[] }> = [
 	{ domain: "research_aide", words: ["research", "paper", "source", "compare", "analysis", "data", "evidence"] },
 ];
 
+/**
+ * Common English words that are never entities.
+ *
+ * The capitalized-word heuristic below is a *fallback* (the model tiers do this
+ * properly), and its failure mode is costly: a sentence-initial "Here" becomes
+ * an entity, then a graph node, then — via the skill award — a competency named
+ * `Here`. A false negative (a missed proper noun) is far cheaper, so this list
+ * is deliberately broad.
+ */
+const ENTITY_STOPWORDS = new Set([
+	// determiners, pronouns, conjunctions, prepositions
+	"The", "This", "That", "These", "Those", "There", "Here", "A", "An", "And", "But", "Or", "Nor",
+	"So", "Yet", "If", "Then", "Than", "As", "Because", "While", "When", "Where", "Why", "How", "What",
+	"Which", "Who", "Whom", "Whose", "I", "You", "We", "They", "He", "She", "It", "Its", "My", "Your",
+	"Our", "Their", "His", "Her", "In", "At", "On", "Of", "To", "For", "With", "From", "By", "Into",
+	"Onto", "Over", "Under", "Up", "Down", "Out", "Off", "No", "Not", "Any", "All", "Some", "Both",
+	// auxiliaries and common verbs
+	"Is", "Are", "Was", "Were", "Am", "Be", "Been", "Being", "Do", "Does", "Did", "Have", "Has",
+	"Had", "Can", "Will", "Would", "Could", "Should", "Might", "Must", "Shall", "Get", "Got", "Make",
+	"Made", "Take", "Give", "See", "Say", "Know", "Think", "Want", "Need", "Use", "Used", "Find",
+	"Read", "Write", "Writes", "Look", "Keep", "Put", "Run", "Set", "Add", "Move", "Turn", "Call",
+	// frequent adverbs / adjectives / sentence glue
+	"Now", "Then", "Just", "Even", "Very", "Well", "Still", "Maybe", "Also", "Only", "Own", "Same",
+	"Too", "More", "Most", "Other", "Such", "First", "Last", "Next", "Before", "After", "New", "Old",
+	"Good", "Bad", "Yes", "Done", "Right", "Lets", "Okay", "Ok", "Sure", "Here's", "Theres",
+	// numbered sentence starts seen in practice
+	"One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+	// prompt scaffolding that leaks in from templates
+	"USER", "AGENT", "TEXT", "TASK", "Return", "Extract", "Report", "Note", "Example", "JSON",
+]);
+
 export class HeuristicEngine implements CognitiveEngine {
 	readonly name = "heuristic";
 
@@ -90,10 +121,13 @@ export class HeuristicEngine implements CognitiveEngine {
 			}
 			case "entities": {
 				const found = new Map<string, string>();
-				// Capitalized multi-word spans + known tool-ish tokens.
-				for (const m of text.matchAll(/\b([A-Z][a-zA-Z0-9]+(?:\s+[A-Z][a-zA-Z0-9]+){0,2})\b/g)) {
+				// Capitalized spans on a single line (never across a newline — the old
+				// `\s+` matched newlines and produced entities like "Projects\nDone").
+				for (const m of text.matchAll(/\b([A-Z][a-zA-Z0-9]+(?:[ \t]+[A-Z][a-zA-Z0-9]+){0,2})\b/g)) {
 					const name = m[1]!.trim();
-					if (["The", "This", "That", "USER", "AGENT", "TEXT", "TASK"].includes(name)) continue;
+					if (name.length < 3) continue;
+					// Drop spans made up only of common words (sentence-initial noise).
+					if (name.split(/[ \t]+/).every((word) => ENTITY_STOPWORDS.has(word))) continue;
 					if (!found.has(name)) found.set(name, guessEntityType(name));
 				}
 				for (const token of tokenize(text)) {

@@ -13,6 +13,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { SoulBridge } from "../src/pi/bridge.ts";
 import { buildConfigPatch } from "../src/pi/soul-config.ts";
+import { Soul } from "../src/runtime/soul.ts";
+import { HeuristicEngine } from "../src/runtime/engines/heuristic.ts";
+import { entitiesPrompt } from "../src/runtime/engines/prompts.ts";
 
 function tmpRoot(): string {
 	return mkdtempSync(join(tmpdir(), "pi-soul-admin-"));
@@ -128,4 +131,49 @@ test("engine flip rebuilds the live engine (regression for PLAN-TOOLS.md)", () =
 	} finally {
 		rmSync(root, { recursive: true, force: true });
 	}
+});
+
+test("pruneEntities: clears corrupted entities, keeps self-model domains", () => {
+	const soul = Soul.birth({ name: "Prune", engine: new HeuristicEngine() });
+	// A real domain skill must survive; the junk ones must not.
+	soul.selfModel.self_images["research_aide"] = { domain: "research_aide", confidence: 0.3, evidence_count: 1 };
+	soul.graph.entities = {
+		What: { name: "What", entity_type: "person", relationships: [{ target: "Knob", relation: "co_occurs" }] },
+		Knob: { name: "Knob", entity_type: "person", relationships: [] },
+		OpenRouter: { name: "OpenRouter", entity_type: "topic", relationships: [] },
+	};
+	const entry = soul.remember("I read the OpenRouter docs", {
+		type: "semantic",
+		entities: ["What", "Knob", "OpenRouter"],
+	});
+	soul.skills.addXp("What", "What", 30);
+	soul.skills.addXp("research_aide", "research_aide", 30);
+
+	// Dry run must not mutate anything.
+	const preview = soul.pruneEntities({ keep: ["openrouter"], dryRun: true });
+	assert.ok(preview.graphRemoved.includes("What"));
+	assert.ok(soul.graph.entities.What, "dry run must not delete graph nodes");
+	assert.deepEqual(entry.entities, ["What", "Knob", "OpenRouter"], "dry run must not strip tags");
+
+	const result = soul.pruneEntities({ keep: ["openrouter"] });
+	assert.deepEqual(Object.keys(soul.graph.entities), ["OpenRouter"], "only the kept entity remains");
+	assert.deepEqual(entry.entities, ["OpenRouter"], "memory tags edited in place");
+	assert.equal(result.memoryTagsRemoved, 2);
+	assert.equal(soul.skills.get("What"), undefined, "junk skill removed");
+	assert.equal(soul.skills.get("research_aide")?.xp, 30, "self-model domain skill survives");
+});
+
+test("heuristic extractor: sentence-initial stopwords are not entities", () => {
+	const out = JSON.parse(
+		new HeuristicEngine().thinkSync(
+			entitiesPrompt("Here is what I did. The engine is fast. Kubernetes and Rust are tools."),
+		),
+	) as { entities: Array<{ name: string; entity_type: string }> };
+	const names = out.entities.map((e) => e.name);
+	assert.ok(!names.includes("Here"), `stopword leaked: ${names.join(",")}`);
+	assert.ok(!names.includes("The"), `stopword leaked: ${names.join(",")}`);
+	assert.ok(
+		names.some((n) => /Kubernetes|Rust|rust/.test(n)),
+		`real entities missing: ${names.join(",")}`,
+	);
 });
