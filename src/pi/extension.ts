@@ -19,6 +19,7 @@ import { registerSoulRenderers } from "./renderers.ts";
 
 export default function soulExtension(pi: ExtensionAPI): void {
 	const bridge = new SoulBridge(process.env.PI_SOUL_DIR || undefined);
+	bridge.attachApi(pi);
 	if (process.env.PI_SOUL_USER) bridge.userId = process.env.PI_SOUL_USER;
 	if (process.env.PI_SOUL_MODEL) bridge.manager.configure({ engine: "model", sessionModel: process.env.PI_SOUL_MODEL });
 	if (process.env.PI_SOUL_CLASSIFIER) bridge.manager.configure({ classifierModel: process.env.PI_SOUL_CLASSIFIER });

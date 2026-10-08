@@ -291,6 +291,7 @@ export function registerSoulCommands(pi: ExtensionAPI, bridge: SoulBridge): void
 				return;
 			}
 			const t = status.telemetry;
+			const audit = bridge.auditStatus();
 			const failures = Object.entries(t.failures)
 				.filter(([, n]) => n > 0)
 				.map(([k, n]) => `${k}=${n}`)
@@ -306,6 +307,9 @@ export function registerSoulCommands(pi: ExtensionAPI, bridge: SoulBridge): void
 					`usage: ${t.usage.input} in / ${t.usage.output} out tokens · $${t.usage.cost.toFixed(4)}`,
 					`deferrals: ${t.deferrals}`,
 					`breakers: ${status.breakers.filter((b) => b.open).map((b) => `${b.key} (retry in ${Math.round(b.retryInMs / 1000)}s)`).join(", ") || "all closed"}`,
+					audit.failures > 0 || !audit.attached
+						? `audit: FAILING — ${audit.failures} transcript entries dropped (${audit.lastError ?? "unknown"})`
+						: "audit: ok",
 				].join("\n"),
 			);
 		},

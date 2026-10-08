@@ -2,7 +2,7 @@
  * SoulBridge — the shared runtime state of the extension: soul manager,
  * engine construction, the observe queue, and audit entries.
  */
-import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { CognitiveEngine } from "../runtime/engines/engine.ts";
 import { HeuristicEngine } from "../runtime/engines/heuristic.ts";
 import type { ModelCaller } from "../runtime/engines/pi-model.ts";
@@ -42,6 +42,10 @@ export class SoulBridge {
 	closed = false;
 
 	private ctx: ExtensionContext | null = null;
+	/** Transcript entries are written through the ExtensionAPI, not the context. */
+	private api: ExtensionAPI | null = null;
+	private auditFailures = 0;
+	private lastAuditError: string | null = null;
 	private engine: CognitiveEngine | null = null;
 	private router: CognitiveRouter | null = null;
 	private analysisService: AnalysisService | null = null;
@@ -56,6 +60,16 @@ export class SoulBridge {
 	}
 
 	/** Bind to a pi session context (called on session_start and lazily elsewhere). */
+	/** Hand the bridge the extension API handle (required for transcript entries). */
+	attachApi(api: ExtensionAPI): void {
+		this.api = api;
+	}
+
+	/** Health of the audit trail: entries that could not be written must be visible. */
+	auditStatus(): { attached: boolean; failures: number; lastError: string | null } {
+		return { attached: this.api !== null, failures: this.auditFailures, lastError: this.lastAuditError };
+	}
+
 	bind(ctx: ExtensionContext): void {
 		this.ctx = ctx;
 		this.cwd = ctx.cwd ?? this.cwd;
@@ -79,10 +93,19 @@ export class SoulBridge {
 	/** Append a quiet transcript entry (visible, never interrupting). */
 	append<T>(customType: string, data: T): void {
 		if (this.closed) return;
+		if (!this.api) {
+			// appendEntry lives on ExtensionAPI, not ExtensionContext; calling it on
+			// the context throws, so a missing handle is a real failure, not a no-op.
+			this.auditFailures++;
+			this.lastAuditError = "no ExtensionAPI attached (call attachApi before appending)";
+			return;
+		}
 		try {
-			this.ctx?.appendEntry<T>(customType, data);
-		} catch {
-			/* session may be transitioning */
+			this.api.appendEntry<T>(customType, data);
+		} catch (err) {
+			// Never fatal to the agent loop, but never silent either.
+			this.auditFailures++;
+			this.lastAuditError = (err as Error).message ?? String(err);
 		}
 	}
 

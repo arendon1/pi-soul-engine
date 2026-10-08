@@ -251,6 +251,47 @@ test("journal: exchanges survive a dead session and replay into memory", async (
 	}
 });
 
+test("bridge: transcript entries go through the ExtensionAPI (regression)", () => {
+	const root = tmpRoot();
+	try {
+		const written: string[] = [];
+		const bridge = new SoulBridge(root);
+		bridge.attachApi({ appendEntry: (type: string) => void written.push(type) } as never);
+		bridge.append("soul:observation", { x: 1 });
+		assert.deepEqual(written, ["soul:observation"], "entry written via the API handle");
+		assert.equal(bridge.auditStatus().failures, 0);
+
+		// A missing handle is a failure, not a silent no-op: appendEntry lives on
+		// ExtensionAPI, calling it on the ExtensionContext throws.
+		const bare = new SoulBridge(root);
+		bare.append("soul:observation", {});
+		assert.equal(bare.auditStatus().failures, 1);
+		assert.match(bare.auditStatus().lastError ?? "", /no ExtensionAPI attached/);
+
+		// A throwing API is counted, never swallowed, and never propagated.
+		const failing = new SoulBridge(root);
+		failing.attachApi({
+			appendEntry: () => {
+				throw new Error("session closed");
+			},
+		} as never);
+		failing.append("soul:deferred", {});
+		assert.equal(failing.auditStatus().failures, 1);
+		assert.match(failing.auditStatus().lastError ?? "", /session closed/);
+
+		// After shutdown the session is off limits.
+		const closed = new SoulBridge(root);
+		const afterClose: string[] = [];
+		closed.attachApi({ appendEntry: (type: string) => void afterClose.push(type) } as never);
+		closed.shutdown();
+		closed.append("soul:observation", {});
+		assert.deepEqual(afterClose, [], "no writes after shutdown");
+		assert.equal(closed.auditStatus().failures, 0, "a deliberate skip is not a failure");
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+});
+
 test("bridge: shutdown hands state to the detached worker and returns immediately", async () => {
 	const root = tmpRoot();
 	const bridge = new SoulBridge(root);
