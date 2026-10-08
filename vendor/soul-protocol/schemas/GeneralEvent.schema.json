@@ -1,0 +1,34 @@
+{
+  "description": "Hierarchical autobiography grouping (Conway's Self-Memory System).\n\nEpisodes cluster into general events (themes), which cluster into\nlifetime periods. This is the general event level.",
+  "properties": {
+    "id": {
+      "default": "",
+      "title": "Id",
+      "type": "string"
+    },
+    "theme": {
+      "default": "",
+      "title": "Theme",
+      "type": "string"
+    },
+    "episode_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Episode Ids",
+      "type": "array"
+    },
+    "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+    },
+    "last_updated": {
+      "format": "date-time",
+      "title": "Last Updated",
+      "type": "string"
+    }
+  },
+  "title": "GeneralEvent",
+  "type": "object"
+}

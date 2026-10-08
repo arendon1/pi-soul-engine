@@ -1,0 +1,32 @@
+{
+  "description": "Output of a soul's reflection pass (LLM-only).\n\nContains themes, summaries, and insights from reviewing recent episodes.\nOnly produced when a CognitiveEngine (LLM) is available.",
+  "properties": {
+    "themes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Themes",
+      "type": "array"
+    },
+    "summaries": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Summaries",
+      "type": "array"
+    },
+    "emotional_patterns": {
+      "default": "",
+      "title": "Emotional Patterns",
+      "type": "string"
+    },
+    "self_insight": {
+      "default": "",
+      "title": "Self Insight",
+      "type": "string"
+    }
+  },
+  "title": "ReflectionResult",
+  "type": "object"
+}

@@ -1,0 +1,28 @@
+{
+  "description": "Significance gate for episodic storage (LIDA architecture).\n\nOnly experiences that pass a significance threshold become episodic memories.",
+  "properties": {
+    "novelty": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Novelty",
+      "type": "number"
+    },
+    "emotional_intensity": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Emotional Intensity",
+      "type": "number"
+    },
+    "goal_relevance": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Goal Relevance",
+      "type": "number"
+    }
+  },
+  "title": "SignificanceScore",
+  "type": "object"
+}

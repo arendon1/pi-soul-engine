@@ -44,11 +44,20 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 const HEAVY_TIMEOUT_MS = 180_000; // scrypt derivations are slow by design
 
 export class SoulWorkerClient {
-	readonly mode: "worker" | "inline" = "worker";
+	/**
+	 * "worker" while a detached child handles persistence; "inline" once
+	 * spawning has failed and the client does the work in-process. Derived, not
+	 * fixed, so it never contradicts what is actually happening.
+	 */
+	get mode(): "worker" | "inline" {
+		return this.spawnFailed ? "inline" : "worker";
+	}
 	private child: ChildProcess | null = null;
 	private pending = new Map<number, Pending>();
 	private nextId = 1;
 	private spawnFailed = false;
+	/** True once the worker has sent any message, i.e. it really started. */
+	private healthy = false;
 	private closing = false;
 
 	// latest-wins save coalescing
@@ -73,6 +82,7 @@ export class SoulWorkerClient {
 				detached: true,
 			});
 			child.on("message", (message: { id?: number; ok?: boolean; result?: unknown; error?: string }) => {
+				this.healthy = true;
 				const pending = this.pending.get(message.id ?? -1);
 				if (!pending) return;
 				this.pending.delete(message.id ?? -1);
@@ -82,6 +92,9 @@ export class SoulWorkerClient {
 			});
 			child.on("exit", () => {
 				this.child = null;
+				// A child that exits before ever answering never really started
+				// (bad script, missing runtime): stop respawning and go inline.
+				if (!this.healthy) this.spawnFailed = true;
 				for (const [, pending] of this.pending) {
 					clearTimeout(pending.timer);
 					pending.reject(transportError("soul worker exited"));
@@ -100,6 +113,7 @@ export class SoulWorkerClient {
 			} catch {
 				/* best effort */
 			}
+			this.healthy = false;
 			this.child = child;
 			return child;
 		} catch {

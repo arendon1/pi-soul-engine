@@ -1,0 +1,486 @@
+{
+  "$defs": {
+    "Biorhythms": {
+      "description": "Simulated vitality and energy patterns.",
+      "properties": {
+        "chronotype": {
+          "default": "neutral",
+          "title": "Chronotype",
+          "type": "string"
+        },
+        "social_battery": {
+          "default": 100.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Social Battery",
+          "type": "number"
+        },
+        "energy_regen_rate": {
+          "default": 5.0,
+          "title": "Energy Regen Rate",
+          "type": "number"
+        }
+      },
+      "title": "Biorhythms",
+      "type": "object"
+    },
+    "Bond": {
+      "description": "The relationship between a human and their soul.",
+      "properties": {
+        "bonded_to": {
+          "default": "",
+          "title": "Bonded To",
+          "type": "string"
+        },
+        "bonded_at": {
+          "format": "date-time",
+          "title": "Bonded At",
+          "type": "string"
+        },
+        "bond_strength": {
+          "default": 50.0,
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Bond Strength",
+          "type": "number"
+        },
+        "interaction_count": {
+          "default": 0,
+          "title": "Interaction Count",
+          "type": "integer"
+        }
+      },
+      "title": "Bond",
+      "type": "object"
+    },
+    "CommunicationStyle": {
+      "description": "How the soul communicates.",
+      "properties": {
+        "warmth": {
+          "default": "moderate",
+          "title": "Warmth",
+          "type": "string"
+        },
+        "verbosity": {
+          "default": "moderate",
+          "title": "Verbosity",
+          "type": "string"
+        },
+        "humor_style": {
+          "default": "none",
+          "title": "Humor Style",
+          "type": "string"
+        },
+        "emoji_usage": {
+          "default": "none",
+          "title": "Emoji Usage",
+          "type": "string"
+        }
+      },
+      "title": "CommunicationStyle",
+      "type": "object"
+    },
+    "CoreMemory": {
+      "description": "Always-loaded memory \u2014 persona description + human profile.",
+      "properties": {
+        "persona": {
+          "default": "",
+          "title": "Persona",
+          "type": "string"
+        },
+        "human": {
+          "default": "",
+          "title": "Human",
+          "type": "string"
+        }
+      },
+      "title": "CoreMemory",
+      "type": "object"
+    },
+    "DNA": {
+      "description": "The soul's complete personality blueprint.",
+      "properties": {
+        "personality": {
+          "$ref": "#/$defs/Personality"
+        },
+        "communication": {
+          "$ref": "#/$defs/CommunicationStyle"
+        },
+        "biorhythms": {
+          "$ref": "#/$defs/Biorhythms"
+        }
+      },
+      "title": "DNA",
+      "type": "object"
+    },
+    "EvolutionConfig": {
+      "description": "Evolution system configuration.",
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/EvolutionMode",
+          "default": "supervised"
+        },
+        "mutation_rate": {
+          "default": 0.01,
+          "title": "Mutation Rate",
+          "type": "number"
+        },
+        "require_approval": {
+          "default": true,
+          "title": "Require Approval",
+          "type": "boolean"
+        },
+        "mutable_traits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Mutable Traits",
+          "type": "array"
+        },
+        "immutable_traits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Immutable Traits",
+          "type": "array"
+        },
+        "history": {
+          "items": {
+            "$ref": "#/$defs/Mutation"
+          },
+          "title": "History",
+          "type": "array"
+        }
+      },
+      "title": "EvolutionConfig",
+      "type": "object"
+    },
+    "EvolutionMode": {
+      "enum": [
+        "disabled",
+        "supervised",
+        "autonomous"
+      ],
+      "title": "EvolutionMode",
+      "type": "string"
+    },
+    "Identity": {
+      "description": "A soul's unique identity with cryptographic DID.",
+      "properties": {
+        "did": {
+          "default": "",
+          "title": "Did",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "archetype": {
+          "default": "",
+          "title": "Archetype",
+          "type": "string"
+        },
+        "born": {
+          "format": "date-time",
+          "title": "Born",
+          "type": "string"
+        },
+        "bonded_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bonded To"
+        },
+        "origin_story": {
+          "default": "",
+          "title": "Origin Story",
+          "type": "string"
+        },
+        "prime_directive": {
+          "default": "",
+          "title": "Prime Directive",
+          "type": "string"
+        },
+        "core_values": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Core Values",
+          "type": "array"
+        },
+        "bond": {
+          "$ref": "#/$defs/Bond"
+        },
+        "incarnation": {
+          "default": 1,
+          "title": "Incarnation",
+          "type": "integer"
+        },
+        "previous_lives": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Previous Lives",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Identity",
+      "type": "object"
+    },
+    "LifecycleState": {
+      "enum": [
+        "born",
+        "active",
+        "dormant",
+        "retired"
+      ],
+      "title": "LifecycleState",
+      "type": "string"
+    },
+    "MemorySettings": {
+      "description": "Configuration for memory subsystem.",
+      "properties": {
+        "episodic_max_entries": {
+          "default": 10000,
+          "title": "Episodic Max Entries",
+          "type": "integer"
+        },
+        "semantic_max_facts": {
+          "default": 1000,
+          "title": "Semantic Max Facts",
+          "type": "integer"
+        },
+        "importance_threshold": {
+          "default": 3,
+          "title": "Importance Threshold",
+          "type": "integer"
+        },
+        "confidence_threshold": {
+          "default": 0.7,
+          "title": "Confidence Threshold",
+          "type": "number"
+        },
+        "persona_tokens": {
+          "default": 500,
+          "title": "Persona Tokens",
+          "type": "integer"
+        },
+        "human_tokens": {
+          "default": 500,
+          "title": "Human Tokens",
+          "type": "integer"
+        }
+      },
+      "title": "MemorySettings",
+      "type": "object"
+    },
+    "Mood": {
+      "enum": [
+        "neutral",
+        "curious",
+        "focused",
+        "tired",
+        "excited",
+        "contemplative",
+        "satisfied",
+        "concerned"
+      ],
+      "title": "Mood",
+      "type": "string"
+    },
+    "Mutation": {
+      "description": "A proposed or applied trait change.",
+      "properties": {
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "trait": {
+          "title": "Trait",
+          "type": "string"
+        },
+        "old_value": {
+          "title": "Old Value",
+          "type": "string"
+        },
+        "new_value": {
+          "title": "New Value",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "proposed_at": {
+          "format": "date-time",
+          "title": "Proposed At",
+          "type": "string"
+        },
+        "approved": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        }
+      },
+      "required": [
+        "trait",
+        "old_value",
+        "new_value",
+        "reason"
+      ],
+      "title": "Mutation",
+      "type": "object"
+    },
+    "Personality": {
+      "description": "Big Five OCEAN model \u2014 each trait 0.0 to 1.0.",
+      "properties": {
+        "openness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Openness",
+          "type": "number"
+        },
+        "conscientiousness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Conscientiousness",
+          "type": "number"
+        },
+        "extraversion": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraversion",
+          "type": "number"
+        },
+        "agreeableness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Agreeableness",
+          "type": "number"
+        },
+        "neuroticism": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Neuroticism",
+          "type": "number"
+        }
+      },
+      "title": "Personality",
+      "type": "object"
+    },
+    "SoulState": {
+      "description": "The soul's current emotional and energy state.",
+      "properties": {
+        "mood": {
+          "$ref": "#/$defs/Mood",
+          "default": "neutral"
+        },
+        "energy": {
+          "default": 100.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Energy",
+          "type": "number"
+        },
+        "focus": {
+          "default": "medium",
+          "title": "Focus",
+          "type": "string"
+        },
+        "social_battery": {
+          "default": 100.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Social Battery",
+          "type": "number"
+        },
+        "last_interaction": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Interaction"
+        }
+      },
+      "title": "SoulState",
+      "type": "object"
+    }
+  },
+  "description": "Complete serializable Soul configuration.",
+  "properties": {
+    "version": {
+      "default": "1.0.0",
+      "title": "Version",
+      "type": "string"
+    },
+    "identity": {
+      "$ref": "#/$defs/Identity"
+    },
+    "dna": {
+      "$ref": "#/$defs/DNA"
+    },
+    "memory": {
+      "$ref": "#/$defs/MemorySettings"
+    },
+    "core_memory": {
+      "$ref": "#/$defs/CoreMemory"
+    },
+    "state": {
+      "$ref": "#/$defs/SoulState"
+    },
+    "evolution": {
+      "$ref": "#/$defs/EvolutionConfig"
+    },
+    "lifecycle": {
+      "$ref": "#/$defs/LifecycleState",
+      "default": "born"
+    }
+  },
+  "required": [
+    "identity"
+  ],
+  "title": "SoulConfig",
+  "type": "object"
+}

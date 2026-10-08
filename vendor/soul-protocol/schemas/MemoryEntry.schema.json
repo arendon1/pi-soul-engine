@@ -1,0 +1,165 @@
+{
+  "$defs": {
+    "MemoryType": {
+      "enum": [
+        "core",
+        "episodic",
+        "semantic",
+        "procedural"
+      ],
+      "title": "MemoryType",
+      "type": "string"
+    },
+    "SomaticMarker": {
+      "description": "Emotional context tagged onto a memory (Damasio's Somatic Marker Hypothesis).\n\nEmotions are not separate from cognition \u2014 they guide recall and decision-making.",
+      "properties": {
+        "valence": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": -1.0,
+          "title": "Valence",
+          "type": "number"
+        },
+        "arousal": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Arousal",
+          "type": "number"
+        },
+        "label": {
+          "default": "neutral",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "title": "SomaticMarker",
+      "type": "object"
+    }
+  },
+  "description": "A single memory with metadata.\n\nv0.2.0 additions: somatic markers (emotional context), access_timestamps\n(full history for ACT-R decay), significance score, and general_event_id\n(Conway hierarchy link). All new fields default to None/empty for\nbackwards compatibility with v0.1.0 data.",
+  "properties": {
+    "id": {
+      "default": "",
+      "title": "Id",
+      "type": "string"
+    },
+    "type": {
+      "$ref": "#/$defs/MemoryType"
+    },
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "importance": {
+      "default": 5,
+      "maximum": 10,
+      "minimum": 1,
+      "title": "Importance",
+      "type": "integer"
+    },
+    "emotion": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Emotion"
+    },
+    "confidence": {
+      "default": 1.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "entities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "last_accessed": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Accessed"
+    },
+    "access_count": {
+      "default": 0,
+      "title": "Access Count",
+      "type": "integer"
+    },
+    "somatic": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SomaticMarker"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "access_timestamps": {
+      "items": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "title": "Access Timestamps",
+      "type": "array"
+    },
+    "significance": {
+      "default": 0.0,
+      "title": "Significance",
+      "type": "number"
+    },
+    "general_event_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "General Event Id"
+    },
+    "superseded_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Superseded By"
+    }
+  },
+  "required": [
+    "type",
+    "content"
+  ],
+  "title": "MemoryEntry",
+  "type": "object"
+}

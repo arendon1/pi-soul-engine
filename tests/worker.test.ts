@@ -109,12 +109,10 @@ test("worker: inline fallback handles every op when the child is unavailable", a
 		const doc = makeDoc("Aria");
 		const dir = join(root, "aria.soul");
 		client.save(dir, doc);
-		const deadline = Date.now() + 5_000;
-		while (Date.now() < deadline) {
-			if (existsSync(join(dir, "soul.json"))) break;
-			await new Promise((r) => setTimeout(r, 50));
-		}
+		assert.equal(await client.flushSaves(), true, "inline save flushed");
 		assert.ok(existsSync(join(dir, "soul.json")), "inline fallback persists too");
+		// `mode` must report the fallback, not keep claiming "worker".
+		assert.equal(client.mode, "inline", "mode reflects the inline fallback");
 		const packed = join(root, "aria.soul");
 		await client.packToFile(doc, join(root, "out", "aria.soul"));
 		assert.ok(existsSync(join(root, "out", "aria.soul")));

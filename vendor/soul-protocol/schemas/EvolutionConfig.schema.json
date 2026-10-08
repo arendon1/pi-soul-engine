@@ -1,0 +1,117 @@
+{
+  "$defs": {
+    "EvolutionMode": {
+      "enum": [
+        "disabled",
+        "supervised",
+        "autonomous"
+      ],
+      "title": "EvolutionMode",
+      "type": "string"
+    },
+    "Mutation": {
+      "description": "A proposed or applied trait change.",
+      "properties": {
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "trait": {
+          "title": "Trait",
+          "type": "string"
+        },
+        "old_value": {
+          "title": "Old Value",
+          "type": "string"
+        },
+        "new_value": {
+          "title": "New Value",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "proposed_at": {
+          "format": "date-time",
+          "title": "Proposed At",
+          "type": "string"
+        },
+        "approved": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        }
+      },
+      "required": [
+        "trait",
+        "old_value",
+        "new_value",
+        "reason"
+      ],
+      "title": "Mutation",
+      "type": "object"
+    }
+  },
+  "description": "Evolution system configuration.",
+  "properties": {
+    "mode": {
+      "$ref": "#/$defs/EvolutionMode",
+      "default": "supervised"
+    },
+    "mutation_rate": {
+      "default": 0.01,
+      "title": "Mutation Rate",
+      "type": "number"
+    },
+    "require_approval": {
+      "default": true,
+      "title": "Require Approval",
+      "type": "boolean"
+    },
+    "mutable_traits": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Mutable Traits",
+      "type": "array"
+    },
+    "immutable_traits": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Immutable Traits",
+      "type": "array"
+    },
+    "history": {
+      "items": {
+        "$ref": "#/$defs/Mutation"
+      },
+      "title": "History",
+      "type": "array"
+    }
+  },
+  "title": "EvolutionConfig",
+  "type": "object"
+}

@@ -1,0 +1,876 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/OCEAN/soul-protocol/schemas/soul-protocol.schema.json",
+  "title": "Soul Protocol",
+  "description": "Complete JSON Schema bundle for the Digital Soul Protocol (DSP) v1.0. Defines every model used in .soul files, memory entries, evolution, and state.",
+  "$ref": "#/$defs/SoulConfig",
+  "$defs": {
+    "Biorhythms": {
+      "description": "Simulated vitality and energy patterns.",
+      "properties": {
+        "chronotype": {
+          "default": "neutral",
+          "title": "Chronotype",
+          "type": "string"
+        },
+        "social_battery": {
+          "default": 100.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Social Battery",
+          "type": "number"
+        },
+        "energy_regen_rate": {
+          "default": 5.0,
+          "title": "Energy Regen Rate",
+          "type": "number"
+        }
+      },
+      "title": "Biorhythms",
+      "type": "object"
+    },
+    "Bond": {
+      "description": "The relationship between a human and their soul.",
+      "properties": {
+        "bonded_to": {
+          "default": "",
+          "title": "Bonded To",
+          "type": "string"
+        },
+        "bonded_at": {
+          "format": "date-time",
+          "title": "Bonded At",
+          "type": "string"
+        },
+        "bond_strength": {
+          "default": 50.0,
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Bond Strength",
+          "type": "number"
+        },
+        "interaction_count": {
+          "default": 0,
+          "title": "Interaction Count",
+          "type": "integer"
+        }
+      },
+      "title": "Bond",
+      "type": "object"
+    },
+    "CommunicationStyle": {
+      "description": "How the soul communicates.",
+      "properties": {
+        "warmth": {
+          "default": "moderate",
+          "title": "Warmth",
+          "type": "string"
+        },
+        "verbosity": {
+          "default": "moderate",
+          "title": "Verbosity",
+          "type": "string"
+        },
+        "humor_style": {
+          "default": "none",
+          "title": "Humor Style",
+          "type": "string"
+        },
+        "emoji_usage": {
+          "default": "none",
+          "title": "Emoji Usage",
+          "type": "string"
+        }
+      },
+      "title": "CommunicationStyle",
+      "type": "object"
+    },
+    "CoreMemory": {
+      "description": "Always-loaded memory \u2014 persona description + human profile.",
+      "properties": {
+        "persona": {
+          "default": "",
+          "title": "Persona",
+          "type": "string"
+        },
+        "human": {
+          "default": "",
+          "title": "Human",
+          "type": "string"
+        }
+      },
+      "title": "CoreMemory",
+      "type": "object"
+    },
+    "DNA": {
+      "description": "The soul's complete personality blueprint.",
+      "properties": {
+        "personality": {
+          "$ref": "#/$defs/Personality"
+        },
+        "communication": {
+          "$ref": "#/$defs/CommunicationStyle"
+        },
+        "biorhythms": {
+          "$ref": "#/$defs/Biorhythms"
+        }
+      },
+      "title": "DNA",
+      "type": "object"
+    },
+    "EvolutionConfig": {
+      "description": "Evolution system configuration.",
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/EvolutionMode",
+          "default": "supervised"
+        },
+        "mutation_rate": {
+          "default": 0.01,
+          "title": "Mutation Rate",
+          "type": "number"
+        },
+        "require_approval": {
+          "default": true,
+          "title": "Require Approval",
+          "type": "boolean"
+        },
+        "mutable_traits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Mutable Traits",
+          "type": "array"
+        },
+        "immutable_traits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Immutable Traits",
+          "type": "array"
+        },
+        "history": {
+          "items": {
+            "$ref": "#/$defs/Mutation"
+          },
+          "title": "History",
+          "type": "array"
+        }
+      },
+      "title": "EvolutionConfig",
+      "type": "object"
+    },
+    "EvolutionMode": {
+      "enum": [
+        "disabled",
+        "supervised",
+        "autonomous"
+      ],
+      "title": "EvolutionMode",
+      "type": "string"
+    },
+    "Identity": {
+      "description": "A soul's unique identity with cryptographic DID.",
+      "properties": {
+        "did": {
+          "default": "",
+          "title": "Did",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "archetype": {
+          "default": "",
+          "title": "Archetype",
+          "type": "string"
+        },
+        "born": {
+          "format": "date-time",
+          "title": "Born",
+          "type": "string"
+        },
+        "bonded_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bonded To"
+        },
+        "origin_story": {
+          "default": "",
+          "title": "Origin Story",
+          "type": "string"
+        },
+        "prime_directive": {
+          "default": "",
+          "title": "Prime Directive",
+          "type": "string"
+        },
+        "core_values": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Core Values",
+          "type": "array"
+        },
+        "bond": {
+          "$ref": "#/$defs/Bond"
+        },
+        "incarnation": {
+          "default": 1,
+          "title": "Incarnation",
+          "type": "integer"
+        },
+        "previous_lives": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Previous Lives",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Identity",
+      "type": "object"
+    },
+    "LifecycleState": {
+      "enum": [
+        "born",
+        "active",
+        "dormant",
+        "retired"
+      ],
+      "title": "LifecycleState",
+      "type": "string"
+    },
+    "MemorySettings": {
+      "description": "Configuration for memory subsystem.",
+      "properties": {
+        "episodic_max_entries": {
+          "default": 10000,
+          "title": "Episodic Max Entries",
+          "type": "integer"
+        },
+        "semantic_max_facts": {
+          "default": 1000,
+          "title": "Semantic Max Facts",
+          "type": "integer"
+        },
+        "importance_threshold": {
+          "default": 3,
+          "title": "Importance Threshold",
+          "type": "integer"
+        },
+        "confidence_threshold": {
+          "default": 0.7,
+          "title": "Confidence Threshold",
+          "type": "number"
+        },
+        "persona_tokens": {
+          "default": 500,
+          "title": "Persona Tokens",
+          "type": "integer"
+        },
+        "human_tokens": {
+          "default": 500,
+          "title": "Human Tokens",
+          "type": "integer"
+        }
+      },
+      "title": "MemorySettings",
+      "type": "object"
+    },
+    "Mood": {
+      "title": "Mood",
+      "description": "",
+      "type": "string",
+      "enum": [
+        "neutral",
+        "curious",
+        "focused",
+        "tired",
+        "excited",
+        "contemplative",
+        "satisfied",
+        "concerned"
+      ]
+    },
+    "Mutation": {
+      "description": "A proposed or applied trait change.",
+      "properties": {
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "trait": {
+          "title": "Trait",
+          "type": "string"
+        },
+        "old_value": {
+          "title": "Old Value",
+          "type": "string"
+        },
+        "new_value": {
+          "title": "New Value",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "proposed_at": {
+          "format": "date-time",
+          "title": "Proposed At",
+          "type": "string"
+        },
+        "approved": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        }
+      },
+      "required": [
+        "trait",
+        "old_value",
+        "new_value",
+        "reason"
+      ],
+      "title": "Mutation",
+      "type": "object"
+    },
+    "Personality": {
+      "description": "Big Five OCEAN model \u2014 each trait 0.0 to 1.0.",
+      "properties": {
+        "openness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Openness",
+          "type": "number"
+        },
+        "conscientiousness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Conscientiousness",
+          "type": "number"
+        },
+        "extraversion": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraversion",
+          "type": "number"
+        },
+        "agreeableness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Agreeableness",
+          "type": "number"
+        },
+        "neuroticism": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Neuroticism",
+          "type": "number"
+        }
+      },
+      "title": "Personality",
+      "type": "object"
+    },
+    "SoulState": {
+      "description": "The soul's current emotional and energy state.",
+      "properties": {
+        "mood": {
+          "$ref": "#/$defs/Mood",
+          "default": "neutral"
+        },
+        "energy": {
+          "default": 100.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Energy",
+          "type": "number"
+        },
+        "focus": {
+          "default": "medium",
+          "title": "Focus",
+          "type": "string"
+        },
+        "social_battery": {
+          "default": 100.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Social Battery",
+          "type": "number"
+        },
+        "last_interaction": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Interaction"
+        }
+      },
+      "title": "SoulState",
+      "type": "object"
+    },
+    "SoulConfig": {
+      "description": "Complete serializable Soul configuration.",
+      "properties": {
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        },
+        "identity": {
+          "$ref": "#/$defs/Identity"
+        },
+        "dna": {
+          "$ref": "#/$defs/DNA"
+        },
+        "memory": {
+          "$ref": "#/$defs/MemorySettings"
+        },
+        "core_memory": {
+          "$ref": "#/$defs/CoreMemory"
+        },
+        "state": {
+          "$ref": "#/$defs/SoulState"
+        },
+        "evolution": {
+          "$ref": "#/$defs/EvolutionConfig"
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/LifecycleState",
+          "default": "born"
+        }
+      },
+      "required": [
+        "identity"
+      ],
+      "title": "SoulConfig",
+      "type": "object"
+    },
+    "SomaticMarker": {
+      "description": "Emotional context tagged onto a memory (Damasio's Somatic Marker Hypothesis).\n\nEmotions are not separate from cognition \u2014 they guide recall and decision-making.",
+      "properties": {
+        "valence": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": -1.0,
+          "title": "Valence",
+          "type": "number"
+        },
+        "arousal": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Arousal",
+          "type": "number"
+        },
+        "label": {
+          "default": "neutral",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "title": "SomaticMarker",
+      "type": "object"
+    },
+    "SignificanceScore": {
+      "description": "Significance gate for episodic storage (LIDA architecture).\n\nOnly experiences that pass a significance threshold become episodic memories.",
+      "properties": {
+        "novelty": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Novelty",
+          "type": "number"
+        },
+        "emotional_intensity": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Emotional Intensity",
+          "type": "number"
+        },
+        "goal_relevance": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Goal Relevance",
+          "type": "number"
+        }
+      },
+      "title": "SignificanceScore",
+      "type": "object"
+    },
+    "GeneralEvent": {
+      "description": "Hierarchical autobiography grouping (Conway's Self-Memory System).\n\nEpisodes cluster into general events (themes), which cluster into\nlifetime periods. This is the general event level.",
+      "properties": {
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "theme": {
+          "default": "",
+          "title": "Theme",
+          "type": "string"
+        },
+        "episode_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Episode Ids",
+          "type": "array"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        },
+        "last_updated": {
+          "format": "date-time",
+          "title": "Last Updated",
+          "type": "string"
+        }
+      },
+      "title": "GeneralEvent",
+      "type": "object"
+    },
+    "SelfImage": {
+      "description": "A facet of the soul's self-concept (Klein's self-model).\n\nBuilt from accumulated experience \u2014 the soul learns who it is\nby observing what it does.",
+      "properties": {
+        "domain": {
+          "default": "",
+          "title": "Domain",
+          "type": "string"
+        },
+        "confidence": {
+          "default": 0.1,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "evidence_count": {
+          "default": 0,
+          "title": "Evidence Count",
+          "type": "integer"
+        }
+      },
+      "title": "SelfImage",
+      "type": "object"
+    },
+    "MemoryType": {
+      "enum": [
+        "core",
+        "episodic",
+        "semantic",
+        "procedural"
+      ],
+      "title": "MemoryType",
+      "type": "string"
+    },
+    "MemoryEntry": {
+      "description": "A single memory with metadata.\n\nv0.2.0 additions: somatic markers (emotional context), access_timestamps\n(full history for ACT-R decay), significance score, and general_event_id\n(Conway hierarchy link). All new fields default to None/empty for\nbackwards compatibility with v0.1.0 data.",
+      "properties": {
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/MemoryType"
+        },
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "importance": {
+          "default": 5,
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Importance",
+          "type": "integer"
+        },
+        "emotion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Emotion"
+        },
+        "confidence": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "entities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Entities",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "last_accessed": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Accessed"
+        },
+        "access_count": {
+          "default": 0,
+          "title": "Access Count",
+          "type": "integer"
+        },
+        "somatic": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SomaticMarker"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "access_timestamps": {
+          "items": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": "Access Timestamps",
+          "type": "array"
+        },
+        "significance": {
+          "default": 0.0,
+          "title": "Significance",
+          "type": "number"
+        },
+        "general_event_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "General Event Id"
+        },
+        "superseded_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Superseded By"
+        }
+      },
+      "required": [
+        "type",
+        "content"
+      ],
+      "title": "MemoryEntry",
+      "type": "object"
+    },
+    "Interaction": {
+      "description": "A single user-agent interaction for the soul to observe.",
+      "properties": {
+        "user_input": {
+          "title": "User Input",
+          "type": "string"
+        },
+        "agent_output": {
+          "title": "Agent Output",
+          "type": "string"
+        },
+        "channel": {
+          "default": "unknown",
+          "title": "Channel",
+          "type": "string"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "title": "Timestamp",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "user_input",
+        "agent_output"
+      ],
+      "title": "Interaction",
+      "type": "object"
+    },
+    "EternalLinks": {
+      "description": "References to eternal storage tiers for a soul archive.",
+      "properties": {
+        "ipfs": {
+          "additionalProperties": true,
+          "title": "Ipfs",
+          "type": "object"
+        },
+        "arweave": {
+          "additionalProperties": true,
+          "title": "Arweave",
+          "type": "object"
+        },
+        "blockchain": {
+          "additionalProperties": true,
+          "title": "Blockchain",
+          "type": "object"
+        }
+      },
+      "title": "EternalLinks",
+      "type": "object"
+    },
+    "SoulManifest": {
+      "description": "Metadata for a .soul archive file.",
+      "properties": {
+        "format_version": {
+          "default": "1.0.0",
+          "title": "Format Version",
+          "type": "string"
+        },
+        "created": {
+          "format": "date-time",
+          "title": "Created",
+          "type": "string"
+        },
+        "exported": {
+          "format": "date-time",
+          "title": "Exported",
+          "type": "string"
+        },
+        "soul_id": {
+          "default": "",
+          "title": "Soul Id",
+          "type": "string"
+        },
+        "soul_name": {
+          "default": "",
+          "title": "Soul Name",
+          "type": "string"
+        },
+        "checksum": {
+          "default": "",
+          "title": "Checksum",
+          "type": "string"
+        },
+        "stats": {
+          "additionalProperties": true,
+          "title": "Stats",
+          "type": "object"
+        },
+        "eternal": {
+          "$ref": "#/$defs/EternalLinks"
+        }
+      },
+      "title": "SoulManifest",
+      "type": "object"
+    },
+    "ReflectionResult": {
+      "description": "Output of a soul's reflection pass (LLM-only).\n\nContains themes, summaries, and insights from reviewing recent episodes.\nOnly produced when a CognitiveEngine (LLM) is available.",
+      "properties": {
+        "themes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Themes",
+          "type": "array"
+        },
+        "summaries": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Summaries",
+          "type": "array"
+        },
+        "emotional_patterns": {
+          "default": "",
+          "title": "Emotional Patterns",
+          "type": "string"
+        },
+        "self_insight": {
+          "default": "",
+          "title": "Self Insight",
+          "type": "string"
+        }
+      },
+      "title": "ReflectionResult",
+      "type": "object"
+    }
+  }
+}

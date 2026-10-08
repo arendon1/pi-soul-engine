@@ -1,0 +1,37 @@
+{
+  "description": "Configuration for memory subsystem.",
+  "properties": {
+    "episodic_max_entries": {
+      "default": 10000,
+      "title": "Episodic Max Entries",
+      "type": "integer"
+    },
+    "semantic_max_facts": {
+      "default": 1000,
+      "title": "Semantic Max Facts",
+      "type": "integer"
+    },
+    "importance_threshold": {
+      "default": 3,
+      "title": "Importance Threshold",
+      "type": "integer"
+    },
+    "confidence_threshold": {
+      "default": 0.7,
+      "title": "Confidence Threshold",
+      "type": "number"
+    },
+    "persona_tokens": {
+      "default": 500,
+      "title": "Persona Tokens",
+      "type": "integer"
+    },
+    "human_tokens": {
+      "default": 500,
+      "title": "Human Tokens",
+      "type": "integer"
+    }
+  },
+  "title": "MemorySettings",
+  "type": "object"
+}

@@ -1,0 +1,27 @@
+{
+  "description": "How the soul communicates.",
+  "properties": {
+    "warmth": {
+      "default": "moderate",
+      "title": "Warmth",
+      "type": "string"
+    },
+    "verbosity": {
+      "default": "moderate",
+      "title": "Verbosity",
+      "type": "string"
+    },
+    "humor_style": {
+      "default": "none",
+      "title": "Humor Style",
+      "type": "string"
+    },
+    "emoji_usage": {
+      "default": "none",
+      "title": "Emoji Usage",
+      "type": "string"
+    }
+  },
+  "title": "CommunicationStyle",
+  "type": "object"
+}

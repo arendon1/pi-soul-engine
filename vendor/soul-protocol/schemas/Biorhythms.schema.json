@@ -1,0 +1,24 @@
+{
+  "description": "Simulated vitality and energy patterns.",
+  "properties": {
+    "chronotype": {
+      "default": "neutral",
+      "title": "Chronotype",
+      "type": "string"
+    },
+    "social_battery": {
+      "default": 100.0,
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Social Battery",
+      "type": "number"
+    },
+    "energy_regen_rate": {
+      "default": 5.0,
+      "title": "Energy Regen Rate",
+      "type": "number"
+    }
+  },
+  "title": "Biorhythms",
+  "type": "object"
+}

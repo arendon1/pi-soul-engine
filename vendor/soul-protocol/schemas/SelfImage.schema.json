@@ -1,0 +1,24 @@
+{
+  "description": "A facet of the soul's self-concept (Klein's self-model).\n\nBuilt from accumulated experience \u2014 the soul learns who it is\nby observing what it does.",
+  "properties": {
+    "domain": {
+      "default": "",
+      "title": "Domain",
+      "type": "string"
+    },
+    "confidence": {
+      "default": 0.1,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "evidence_count": {
+      "default": 0,
+      "title": "Evidence Count",
+      "type": "integer"
+    }
+  },
+  "title": "SelfImage",
+  "type": "object"
+}

@@ -1,0 +1,34 @@
+{
+  "description": "A single user-agent interaction for the soul to observe.",
+  "properties": {
+    "user_input": {
+      "title": "User Input",
+      "type": "string"
+    },
+    "agent_output": {
+      "title": "Agent Output",
+      "type": "string"
+    },
+    "channel": {
+      "default": "unknown",
+      "title": "Channel",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    }
+  },
+  "required": [
+    "user_input",
+    "agent_output"
+  ],
+  "title": "Interaction",
+  "type": "object"
+}

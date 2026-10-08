@@ -1,4 +1,13 @@
-# pi-soul — Soul Protocol, natively integrated into Pi
+# pi-soul-engine — Soul Protocol, natively integrated into Pi
+
+> **Status: shipped (v0.2.0).** This document is the original build plan; its
+> phases P0–P5 are complete, and the engine/resilience work (P6–P11 below) was
+> added afterwards. The canonical, installable artefact lives at
+> `Projects/pi-soul-engine` and the strategy for the model layer is documented
+> in `ENGINE.md`.
+>
+> See README.md for usage, ENGINE.md for the cognitive-engine strategy, and
+> COVERAGE.md for how much of the upstream protocol is implemented.
 
 > **Status: implemented.** All phases P0–P5 are complete (43/43 tests green,
 > live e2e verified in Pi). See README.md for usage; §7 below maps to what shipped.
@@ -175,6 +184,17 @@ renderers + rare `ctx.ui.notify` toasts, configurable via `notifications`).
 | **P3 — PiModelEngine** | LLM-backed cognition via `modelRegistry` (HybridEngine default); compaction distillation; `agent_before_settle` reflection | ✅ done |
 | **P4 — UX + skills + codemode** | overlay panel, renderers, 2 skills, 3 prompt templates, codemode tools, export/import | ✅ done — no footer usage anywhere |
 | **P5 — Advanced + hardening** | skills/XP, Ed25519 trust chain, evolution approval, multi-soul switch, SHS evaluator, docs | ✅ done — SHS 80.6/100 on a one-exchange soul |
+
+### Post-plan phases (secondary cognition, then the model layer)
+
+| Phase | Deliverable | Status |
+|---|---|---|
+| **P6** | Evaluator (10 rubrics, heuristic scorers, domain stats, streaks) + LearningEvent model and lifecycle | ✅ done |
+| **P7** | Full `dream()`: topic clusters, procedure detection, behavioural trends, archival, dedup, graph consolidation, synthesis, insights, dry-run | ✅ done |
+| **P8** | Automatic evolution triggers (`checkTriggers` on high-performance streaks) + enum trait support + Soul wiring (`evaluate` per interaction, `learn`, auto-consolidation) | ✅ done |
+| **P9** | Pi surfaces for the above (`soul_evaluate`, `soul_learn`, `/soul-evaluate`, `/soul-learning`, richer `/soul-dream`) + coverage/README updates | ✅ done |
+| **P10** | Cognitive-engine strategy: `ENGINE.md`, tiered `CognitiveRouter`, batched `AnalysisService` + classifier client, hybrid rubric scoring | ✅ done |
+| **P11** | Resilience: failure taxonomy, deadlines, single transient retry, model/provider breakers, budgets, cache, degradation, deferral, usage capture; resilience + performance test suites | ✅ done |
 
 ## 8. Non-goals (v1)
 

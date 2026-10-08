@@ -1,0 +1,104 @@
+{
+  "$defs": {
+    "Bond": {
+      "description": "The relationship between a human and their soul.",
+      "properties": {
+        "bonded_to": {
+          "default": "",
+          "title": "Bonded To",
+          "type": "string"
+        },
+        "bonded_at": {
+          "format": "date-time",
+          "title": "Bonded At",
+          "type": "string"
+        },
+        "bond_strength": {
+          "default": 50.0,
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Bond Strength",
+          "type": "number"
+        },
+        "interaction_count": {
+          "default": 0,
+          "title": "Interaction Count",
+          "type": "integer"
+        }
+      },
+      "title": "Bond",
+      "type": "object"
+    }
+  },
+  "description": "A soul's unique identity with cryptographic DID.",
+  "properties": {
+    "did": {
+      "default": "",
+      "title": "Did",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "archetype": {
+      "default": "",
+      "title": "Archetype",
+      "type": "string"
+    },
+    "born": {
+      "format": "date-time",
+      "title": "Born",
+      "type": "string"
+    },
+    "bonded_to": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bonded To"
+    },
+    "origin_story": {
+      "default": "",
+      "title": "Origin Story",
+      "type": "string"
+    },
+    "prime_directive": {
+      "default": "",
+      "title": "Prime Directive",
+      "type": "string"
+    },
+    "core_values": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Core Values",
+      "type": "array"
+    },
+    "bond": {
+      "$ref": "#/$defs/Bond"
+    },
+    "incarnation": {
+      "default": 1,
+      "title": "Incarnation",
+      "type": "integer"
+    },
+    "previous_lives": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Previous Lives",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "title": "Identity",
+  "type": "object"
+}

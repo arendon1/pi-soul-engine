@@ -1,0 +1,17 @@
+{
+  "description": "Always-loaded memory \u2014 persona description + human profile.",
+  "properties": {
+    "persona": {
+      "default": "",
+      "title": "Persona",
+      "type": "string"
+    },
+    "human": {
+      "default": "",
+      "title": "Human",
+      "type": "string"
+    }
+  },
+  "title": "CoreMemory",
+  "type": "object"
+}

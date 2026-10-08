@@ -1,0 +1,26 @@
+{
+  "description": "Emotional context tagged onto a memory (Damasio's Somatic Marker Hypothesis).\n\nEmotions are not separate from cognition \u2014 they guide recall and decision-making.",
+  "properties": {
+    "valence": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": -1.0,
+      "title": "Valence",
+      "type": "number"
+    },
+    "arousal": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Arousal",
+      "type": "number"
+    },
+    "label": {
+      "default": "neutral",
+      "title": "Label",
+      "type": "string"
+    }
+  },
+  "title": "SomaticMarker",
+  "type": "object"
+}

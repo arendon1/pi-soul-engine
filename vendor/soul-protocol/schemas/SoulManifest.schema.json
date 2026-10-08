@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "EternalLinks": {
+      "description": "References to eternal storage tiers for a soul archive.",
+      "properties": {
+        "ipfs": {
+          "additionalProperties": true,
+          "title": "Ipfs",
+          "type": "object"
+        },
+        "arweave": {
+          "additionalProperties": true,
+          "title": "Arweave",
+          "type": "object"
+        },
+        "blockchain": {
+          "additionalProperties": true,
+          "title": "Blockchain",
+          "type": "object"
+        }
+      },
+      "title": "EternalLinks",
+      "type": "object"
+    }
+  },
+  "description": "Metadata for a .soul archive file.",
+  "properties": {
+    "format_version": {
+      "default": "1.0.0",
+      "title": "Format Version",
+      "type": "string"
+    },
+    "created": {
+      "format": "date-time",
+      "title": "Created",
+      "type": "string"
+    },
+    "exported": {
+      "format": "date-time",
+      "title": "Exported",
+      "type": "string"
+    },
+    "soul_id": {
+      "default": "",
+      "title": "Soul Id",
+      "type": "string"
+    },
+    "soul_name": {
+      "default": "",
+      "title": "Soul Name",
+      "type": "string"
+    },
+    "checksum": {
+      "default": "",
+      "title": "Checksum",
+      "type": "string"
+    },
+    "stats": {
+      "additionalProperties": true,
+      "title": "Stats",
+      "type": "object"
+    },
+    "eternal": {
+      "$ref": "#/$defs/EternalLinks"
+    }
+  },
+  "title": "SoulManifest",
+  "type": "object"
+}

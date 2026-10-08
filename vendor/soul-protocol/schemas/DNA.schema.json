@@ -1,0 +1,111 @@
+{
+  "$defs": {
+    "Biorhythms": {
+      "description": "Simulated vitality and energy patterns.",
+      "properties": {
+        "chronotype": {
+          "default": "neutral",
+          "title": "Chronotype",
+          "type": "string"
+        },
+        "social_battery": {
+          "default": 100.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Social Battery",
+          "type": "number"
+        },
+        "energy_regen_rate": {
+          "default": 5.0,
+          "title": "Energy Regen Rate",
+          "type": "number"
+        }
+      },
+      "title": "Biorhythms",
+      "type": "object"
+    },
+    "CommunicationStyle": {
+      "description": "How the soul communicates.",
+      "properties": {
+        "warmth": {
+          "default": "moderate",
+          "title": "Warmth",
+          "type": "string"
+        },
+        "verbosity": {
+          "default": "moderate",
+          "title": "Verbosity",
+          "type": "string"
+        },
+        "humor_style": {
+          "default": "none",
+          "title": "Humor Style",
+          "type": "string"
+        },
+        "emoji_usage": {
+          "default": "none",
+          "title": "Emoji Usage",
+          "type": "string"
+        }
+      },
+      "title": "CommunicationStyle",
+      "type": "object"
+    },
+    "Personality": {
+      "description": "Big Five OCEAN model \u2014 each trait 0.0 to 1.0.",
+      "properties": {
+        "openness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Openness",
+          "type": "number"
+        },
+        "conscientiousness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Conscientiousness",
+          "type": "number"
+        },
+        "extraversion": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraversion",
+          "type": "number"
+        },
+        "agreeableness": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Agreeableness",
+          "type": "number"
+        },
+        "neuroticism": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Neuroticism",
+          "type": "number"
+        }
+      },
+      "title": "Personality",
+      "type": "object"
+    }
+  },
+  "description": "The soul's complete personality blueprint.",
+  "properties": {
+    "personality": {
+      "$ref": "#/$defs/Personality"
+    },
+    "communication": {
+      "$ref": "#/$defs/CommunicationStyle"
+    },
+    "biorhythms": {
+      "$ref": "#/$defs/Biorhythms"
+    }
+  },
+  "title": "DNA",
+  "type": "object"
+}

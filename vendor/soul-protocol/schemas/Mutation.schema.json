@@ -1,0 +1,64 @@
+{
+  "description": "A proposed or applied trait change.",
+  "properties": {
+    "id": {
+      "default": "",
+      "title": "Id",
+      "type": "string"
+    },
+    "trait": {
+      "title": "Trait",
+      "type": "string"
+    },
+    "old_value": {
+      "title": "Old Value",
+      "type": "string"
+    },
+    "new_value": {
+      "title": "New Value",
+      "type": "string"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "proposed_at": {
+      "format": "date-time",
+      "title": "Proposed At",
+      "type": "string"
+    },
+    "approved": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approved"
+    },
+    "approved_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approved At"
+    }
+  },
+  "required": [
+    "trait",
+    "old_value",
+    "new_value",
+    "reason"
+  ],
+  "title": "Mutation",
+  "type": "object"
+}

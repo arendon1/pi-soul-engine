@@ -1,0 +1,42 @@
+{
+  "description": "Big Five OCEAN model \u2014 each trait 0.0 to 1.0.",
+  "properties": {
+    "openness": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Openness",
+      "type": "number"
+    },
+    "conscientiousness": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Conscientiousness",
+      "type": "number"
+    },
+    "extraversion": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Extraversion",
+      "type": "number"
+    },
+    "agreeableness": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Agreeableness",
+      "type": "number"
+    },
+    "neuroticism": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Neuroticism",
+      "type": "number"
+    }
+  },
+  "title": "Personality",
+  "type": "object"
+}

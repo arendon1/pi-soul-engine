@@ -1,0 +1,15 @@
+{
+  "title": "Mood",
+  "description": "",
+  "type": "string",
+  "enum": [
+    "neutral",
+    "curious",
+    "focused",
+    "tired",
+    "excited",
+    "contemplative",
+    "satisfied",
+    "concerned"
+  ]
+}

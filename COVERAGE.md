@@ -1,8 +1,8 @@
 # Soul Protocol coverage — pi-soul vs. the paper + reference repo
 
 **Method.** Enumerated the upstream surface from three sources:
-`src/soul_protocol/spec/` (23 modules), `src/soul_protocol/runtime/` (~80 modules),
-the `Soul` public method list (74 methods), the CLI command list (~37 commands),
+`src/soul_protocol/spec/` (23 modules), `src/soul_protocol/runtime/` (101
+modules), the `Soul` public method list (74 methods), the CLI command list (~37 commands),
 and the whitepaper's architecture/validation sections. Each item was scored
 against the pi-soul implementation: **✅ full**, **🟡 partial**, **❌ missing**,
 **⬜ n/a for pi** (replaced by a first-class pi mechanism).

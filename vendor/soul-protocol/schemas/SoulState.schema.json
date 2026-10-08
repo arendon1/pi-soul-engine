@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "Mood": {
+      "enum": [
+        "neutral",
+        "curious",
+        "focused",
+        "tired",
+        "excited",
+        "contemplative",
+        "satisfied",
+        "concerned"
+      ],
+      "title": "Mood",
+      "type": "string"
+    }
+  },
+  "description": "The soul's current emotional and energy state.",
+  "properties": {
+    "mood": {
+      "$ref": "#/$defs/Mood",
+      "default": "neutral"
+    },
+    "energy": {
+      "default": 100.0,
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Energy",
+      "type": "number"
+    },
+    "focus": {
+      "default": "medium",
+      "title": "Focus",
+      "type": "string"
+    },
+    "social_battery": {
+      "default": 100.0,
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Social Battery",
+      "type": "number"
+    },
+    "last_interaction": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Interaction"
+    }
+  },
+  "title": "SoulState",
+  "type": "object"
+}
