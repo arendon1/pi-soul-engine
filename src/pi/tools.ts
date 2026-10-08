@@ -399,6 +399,7 @@ export function registerSoulTools(pi: ExtensionAPI, bridge: SoulBridge): void {
 			"for every turn; use this for external exchanges to import.",
 		parameters: ObserveParams,
 		exposure: "codemode",
+		annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
 		namespace: NAMESPACE,
 		async execute(_id, params, signal, _onUpdate, _ctx) {
 			const record = await bridge.enqueueObserve(params.user_input, params.agent_output, { signal });
@@ -413,6 +414,7 @@ export function registerSoulTools(pi: ExtensionAPI, bridge: SoulBridge): void {
 		description: "Portable skill history: domains with XP, level, and evidence counts.",
 		parameters: SkillsParams,
 		exposure: "codemode",
+		annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
 		namespace: NAMESPACE,
 		async execute() {
 			const soul = bridge.soul();
@@ -434,6 +436,7 @@ export function registerSoulTools(pi: ExtensionAPI, bridge: SoulBridge): void {
 			"mutations are journaled in the soul's evolution history.",
 		parameters: EvolveParams,
 		exposure: "codemode",
+		annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
 		namespace: NAMESPACE,
 		async execute(_id, params, _signal, _onUpdate, _ctx) {
 			const soul = bridge.soul();
