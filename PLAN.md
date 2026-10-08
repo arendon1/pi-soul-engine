@@ -126,6 +126,13 @@ pi-soul/
 All tools: TypeBox params (shared with `spec/schemas.ts`), `annotations` (readOnly for recall/status),
 `outputSchema` + `structuredContent`, truncation guidance for large recall payloads.
 
+> **Planned extension (surface parity).** Nine command capabilities still have no
+> model-facing entry point — notably `/soul-config` and `/soul-engine`, which
+> blocked a routine engine switch because a config file edit cannot rebuild the
+> in-process engine. `PLAN-TOOLS.md` specifies the three tools that close this
+> (`soul_engine`, `soul_config`, `soul_admin`), the parity rule, and a regression
+> test for that failure.
+
 ## 4. Commands & UI (no footer)
 
 - `/soul` — overlay panel: OCEAN bars, mood/energy/social battery, bond gauge, tier counts,
