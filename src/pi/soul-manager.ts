@@ -74,7 +74,7 @@ const DEFAULT_CONFIG: SoulManagerConfig = {
 	reflectModel: "openrouter/~deepseek/deepseek-flash-latest",
 	factsMode: "model",
 	rubricScoring: "hybrid",
-	confidenceFloor: 0.5,
+	confidenceFloor: 0.4,
 	cache: true,
 	recallLimit: 5,
 	promptBudget: 400,

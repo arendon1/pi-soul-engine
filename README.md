@@ -194,8 +194,8 @@ the upstream runtime reads a soul this implementation wrote. Have a look at
 - **Why did a rubric score come from heuristics instead of the classifier?** Classifier calls do not go
   through the router, so their outcome is recorded with each evaluation in the trust chain
   (`rubric_source`, and `classifier.dropped` such as `specificity:confidence=0.42<0.5`). Answers below
-  `confidenceFloor` (default `0.5`) fall back per field by design; raise or lower it with
-  `/soul-config confidenceFloor=0.4`.
+  `confidenceFloor` (default `0.4`) fall back per field by design; tune it with
+  `/soul-config confidenceFloor=0.3`.
 
 ## Credits
 

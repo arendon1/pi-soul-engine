@@ -139,7 +139,7 @@ export class AnalysisService {
 		this.classifier = options.classifier ?? null;
 		this.engine = options.engine ?? null;
 		this.heuristic = options.heuristic ?? new HeuristicEngine();
-		this.confidenceFloor = options.confidenceFloor ?? 0.5;
+		this.confidenceFloor = options.confidenceFloor ?? 0.4;
 		this.rubricScoring = options.rubricScoring ?? "hybrid";
 		this.factsMode = options.factsMode ?? "model";
 		this.maxStateTokens = options.maxStateTokens ?? 1200;

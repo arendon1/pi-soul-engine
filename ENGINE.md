@@ -96,7 +96,7 @@ guess: each row has a test.
    per provider (shared across its models).
 5. **Validation** — schema shape, range clamps, **per-field fallback** so a
    batch never fails wholesale; classifier confidence below
-   `confidenceFloor` (0.5) hands that field to heuristics.
+   `confidenceFloor` (0.4) hands that field to heuristics.
 6. **Guaranteed floor** — heuristics never fail, so `observe()` always
    completes.
 7. **Deferral, not fabrication** — aborting mid-observe leaves the journal
@@ -126,7 +126,7 @@ reflectModel=openrouter/~deepseek/deepseek-flash-latest
 sessionModel=                       # empty → the session's active model
 factsMode=model|heuristic
 rubricScoring=hybrid|classifier|heuristic
-confidenceFloor=0.5
+confidenceFloor=0.4
 cache=on|off
 ```
 
@@ -169,9 +169,12 @@ counters and the cache.
 
 ## 6. Limits / next
 
-- **Classifier confidence is coarse.** A floor of 0.5 keeps most answers, but
-  `score` granularity is 4–5 levels, so valence resolution is ±0.25. Raise
-  levels if finer emotion tracking is wanted.
+- **Classifier confidence is coarse.** `score` answers are 4–5 level indices (so valence resolution is
+  ±0.25), and measured confidences for a rubric criterion ranged **0.47–0.88**. The default
+  `confidenceFloor` is therefore **0.4**: at 0.5 roughly a third of observed exchanges silently lost the
+  classifier's rubric contribution to a heuristic fallback. Every evaluation records whether it fell
+  back and why (`rubric_source` plus the classifier outcome in the trust chain), and the floor is
+  configurable with `/soul-config confidenceFloor=…`.
 - **No streaming or parallel tier racing** — tiers are tried in order. Racing
   (fire two, take the first) would halve worst-case latency at double cost.
 - **Learning events are still command-driven** (`soul_learn`), matching
