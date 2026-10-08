@@ -158,9 +158,11 @@ when `ajv` is absent (or when no schemas are found), and the cross-runtime inter
 Python or the upstream `soul_protocol` package is absent. `npm install` adds `ajv` and full schema
 conformance.
 
-`typebox` is **host-provided by Pi** and is deliberately not a devDependency — installing it inside a Pi
-package shadows the host copy, which Pi warns about. Editors that typecheck `src/` need it locally
-(`npm i -D typebox`); runtime never does.
+`typebox` and `@earendil-works/*` are **host-provided by Pi**. They are peerDependencies, and `.npmrc`
+sets `omit=peer` so `npm install` never copies them into this package — npm 7+ installs peers by default,
+which shadows the host modules (Pi warns about exactly that). `npm install` therefore adds only `ajv` (and
+its four deps). Editors that typecheck `src/` can install typebox locally with
+`npm i -D --omit=peer=false typebox`.
 
 **On Termux / Android shared storage (`/storage/emulated/0`), `npm install` fails** because
 `node_modules` cannot be created with the required symlinks/permissions. Run the install and the

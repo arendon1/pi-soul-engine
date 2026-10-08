@@ -114,7 +114,8 @@ git archive HEAD | tar -x -C "$TARGET"
 
 if [[ "$WITH_NPM" == "1" ]]; then
 	echo "==> npm install (devDependencies: ajv for schema conformance)"
-	(cd "$TARGET" && npm install --no-audit --no-fund)
+	# --omit=peer: host-provided packages must never be installed locally
+	(cd "$TARGET" && npm install --omit=peer --no-audit --no-fund)
 fi
 
 echo "==> deployed $(find "$TARGET" -type f -not -path '*/node_modules/*' | wc -l) files to $TARGET (rev $REV)"
