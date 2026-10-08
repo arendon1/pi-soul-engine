@@ -95,10 +95,12 @@ if [[ "$APPLY" != "1" ]]; then
 	trap 'rm -rf "$STAGE"' EXIT
 	git archive HEAD | tar -x -C "$STAGE"
 	echo "==> files that would be written: $(find "$STAGE" -type f | wc -l)"
-	DRIFT="$(diff -rq "$STAGE" "$TARGET" 2>/dev/null | wc -l || true)"
-	echo "==> differences vs the current deployment: $DRIFT"
+	# node_modules and package-lock.json are deployment-owned: expected to differ.
+	DIFF="$(diff -rq "$STAGE" "$TARGET" 2>/dev/null | grep -v 'node_modules\|package-lock.json' || true)"
+	DRIFT="$(printf '%s' "$DIFF" | grep -c . || true)"
+	echo "==> differences vs the current deployment: $DRIFT (excluding node_modules, package-lock.json)"
 	if [[ "$DRIFT" != "0" ]]; then
-		diff -rq "$STAGE" "$TARGET" 2>/dev/null | head -40 | sed 's|^|    |'
+		printf '%s\n' "$DIFF" | head -40 | sed "s|$STAGE|SOURCE|g; s|$TARGET|TARGET|g" | sed 's|^|    |'
 	fi
 	echo "==> dry run complete; nothing was written"
 	exit 0
