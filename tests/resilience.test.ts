@@ -399,6 +399,10 @@ test("analysis: low-confidence answers are discarded per field", async () => {
 	const analysis = await service.analyze({ user: "this is amazing", agent: "wonderful news" });
 	assert.ok(analysis.somatic.valence > 0, "low-confidence valence replaced by the heuristic");
 	assert.equal(analysis.significance.novelty, 1, "confident answers kept");
+	// The reason for the fallback is recorded, so silent degradation is diagnosable.
+	assert.deepEqual(service.classifierOutcome.dropped, ["valence:confidence=0.10<0.5"]);
+	assert.equal(service.classifierOutcome.attempted, true);
+	assert.equal(service.classifierOutcome.stopReason, "stop");
 });
 
 test("analysis: malformed extraction output falls back to heuristics, sanitised", async () => {

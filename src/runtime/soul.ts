@@ -324,6 +324,10 @@ export class Soul {
 		this.recordAction("evaluation", {
 			domain: result.rubric_id,
 			score: Number(result.overall_score.toFixed(3)),
+			// Which tier scored the rubric, and why the classifier abstained when it did.
+			rubric_source:
+				precomputed && Object.keys(precomputed.criteria).length > 0 ? "classifier+heuristic" : "heuristic",
+			classifier: this.analysis?.classifierOutcome ?? null,
 		});
 		return result;
 	}

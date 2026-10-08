@@ -122,6 +122,18 @@ export class AnalysisService {
 	private factsMode: "heuristic" | "model";
 	private maxStateTokens: number;
 	private maxInputChars: number;
+	/**
+	 * Why the last classifier batch produced what it did. Classifier calls do not
+	 * go through the router, so this is the only place their outcome is visible;
+	 * it is recorded with each evaluation so silent fallbacks are diagnosable.
+	 */
+	private lastClassifierOutcome: {
+		attempted: boolean;
+		stopReason?: string;
+		errorMessage?: string;
+		answered?: number;
+		dropped?: string[];
+	} = { attempted: false };
 
 	constructor(options: AnalysisOptions = {}) {
 		this.classifier = options.classifier ?? null;
@@ -152,6 +164,17 @@ export class AnalysisService {
 	/** Update the chat tier (e.g. when the router is rebuilt). */
 	setEngine(engine: CognitiveEngine | null): void {
 		this.engine = engine;
+	}
+
+	/** Outcome of the most recent classifier batch (for diagnostics/auditing). */
+	get classifierOutcome(): {
+		attempted: boolean;
+		stopReason?: string;
+		errorMessage?: string;
+		answered?: number;
+		dropped?: string[];
+	} {
+		return this.lastClassifierOutcome;
 	}
 
 	async analyze(input: AnalysisInput): Promise<ExchangeAnalysis> {
@@ -251,7 +274,10 @@ export class AnalysisService {
 			rubric: null,
 			significanceUsed: "heuristic" as const,
 		};
-		if (!this.classifier || !this.classifier.available()) return empty;
+		if (!this.classifier || !this.classifier.available()) {
+			this.lastClassifierOutcome = { attempted: false, stopReason: "unavailable" };
+			return empty;
+		}
 
 		const exchange = truncateToTokens(`HUMAN: ${input.user}\nAGENT: ${input.agent}`, this.maxStateTokens);
 		const questions: Record<string, ClassifierQuestion> = {
@@ -314,19 +340,33 @@ export class AnalysisService {
 			}
 			if (response.stopReason !== "stop") {
 				// Configured and called, but unusable → the analysis is degraded.
+				this.lastClassifierOutcome = {
+					attempted: true,
+					stopReason: response.stopReason,
+					errorMessage: response.errorMessage,
+				};
 				return { ...empty, attempted: true };
 			}
 			answers = response.answers ?? {};
 		} catch (err) {
 			if (input.signal?.aborted) throw err;
+			this.lastClassifierOutcome = { attempted: true, stopReason: "threw", errorMessage: (err as Error).message };
 			return { ...empty, attempted: true };
 		}
 
 		const floor = this.confidenceFloor;
+		const droppedAnswers: string[] = [];
 		const take = <T>(id: string, mapper: (a: ClassifierAnswer) => T | null): T | null => {
 			const answer = answers[id];
-			if (!answer) return null;
-			if (answerConfidence(answer) < floor) return null;
+			if (!answer) {
+				droppedAnswers.push(`${id}:no-answer`);
+				return null;
+			}
+			const confidence = answerConfidence(answer);
+			if (confidence < floor) {
+				droppedAnswers.push(`${id}:confidence=${confidence.toFixed(2)}<${floor}`);
+				return null;
+			}
 			return mapper(answer);
 		};
 
@@ -339,7 +379,7 @@ export class AnalysisService {
 		const scored = [novelty, emotional_intensity, goal_relevance, content_richness].filter((v) => v !== null).length;
 		const significanceUsed = scored === 4 ? "classifier" : scored > 0 ? "partial" : "heuristic";
 
-		return {
+		const result = {
 			used: true,
 			attempted: true,
 			valence: take("valence", (a) => scoreToSigned(a, VALENCE_LEVELS.length)),
@@ -349,11 +389,24 @@ export class AnalysisService {
 			emotional_intensity,
 			goal_relevance,
 			content_richness,
-			domain: take("domain", (a) => (a.type === "choice" ? (a.choice === "none" ? null : a.choice) : null)),
+			domain:
+				input.knownDomains && input.knownDomains.length > 0
+					? take("domain", (a) => (a.type === "choice" ? (a.choice === "none" ? null : a.choice) : null))
+					: null,
 			rubric,
 			significanceUsed,
 		};
+		// Recorded after the field reads above, so per-field drop reasons are included.
+		this.lastClassifierOutcome = {
+			attempted: true,
+			stopReason: "stop",
+			answered: Object.keys(answers).length,
+			dropped: [...droppedAnswers, ...this.lastRubricDropped],
+		};
+		return result;
 	}
+
+	private lastRubricDropped: string[] = [];
 
 	private collectRubric(
 		answers: Record<string, ClassifierAnswer>,
@@ -361,12 +414,23 @@ export class AnalysisService {
 		floor: number,
 	): { criteria: Record<string, number>; overall: number } | null {
 		const scores: Record<string, number> = {};
+		const dropped: string[] = [];
 		for (const criterion of criteria) {
 			const answer = answers[`rubric_${criterion}`];
-			if (!answer || answerConfidence(answer) < floor) continue;
+			if (!answer) {
+				dropped.push(`${criterion}:no-answer`);
+				continue;
+			}
+			const confidence = answerConfidence(answer);
+			if (confidence < floor) {
+				dropped.push(`${criterion}:confidence=${confidence.toFixed(2)}<${floor}`);
+				continue;
+			}
 			const unit = scoreToUnit(answer, 4);
 			if (unit !== null) scores[criterion] = clampUnit(unit);
+			else dropped.push(`${criterion}:unusable-answer`);
 		}
+		this.lastRubricDropped = dropped;
 		if (Object.keys(scores).length === 0) return null;
 		const values = Object.values(scores);
 		return { criteria: scores, overall: values.reduce((a, b) => a + b, 0) / values.length };

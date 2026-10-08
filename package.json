@@ -59,7 +59,6 @@
 		"typebox": "*"
 	},
 	"devDependencies": {
-		"ajv": "^8.17.0",
-		"typebox": "^1.0.0"
+		"ajv": "^8.17.0"
 	}
 }

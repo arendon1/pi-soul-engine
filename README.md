@@ -158,6 +158,10 @@ when `ajv` is absent (or when no schemas are found), and the cross-runtime inter
 Python or the upstream `soul_protocol` package is absent. `npm install` adds `ajv` and full schema
 conformance.
 
+`typebox` is **host-provided by Pi** and is deliberately not a devDependency — installing it inside a Pi
+package shadows the host copy, which Pi warns about. Editors that typecheck `src/` need it locally
+(`npm i -D typebox`); runtime never does.
+
 **On Termux / Android shared storage (`/storage/emulated/0`), `npm install` fails** because
 `node_modules` cannot be created with the required symlinks/permissions. Run the install and the
 verification script from a normal filesystem, e.g. copy the project into your home directory first.
@@ -185,6 +189,11 @@ the upstream runtime reads a soul this implementation wrote. Have a look at
 - **After a provider outage** — `/soul-engine reset` clears breakers, budget counters and the cache.
 - **Why did the engine degrade?** `/soul-engine` shows tier assignments, degraded flag, breaker state,
   failure classes, budget denials, cache hits/misses and cost. `/soul` shows a one-line engine summary.
+- **Why did a rubric score come from heuristics instead of the classifier?** Classifier calls do not go
+  through the router, so their outcome is recorded with each evaluation in the trust chain
+  (`rubric_source`, and `classifier.dropped` such as `specificity:confidence=0.42<0.5`). Answers below
+  `confidenceFloor` (default `0.5`) fall back per field by design; raise or lower it with
+  `/soul-config confidenceFloor=0.4`.
 
 ## Credits
 
