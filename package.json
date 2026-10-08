@@ -1,0 +1,54 @@
+{
+	"name": "pi-soul-engine",
+	"version": "0.2.0",
+	"description": "Soul Protocol for Pi — portable AI identity, memory, cognition and emotion, with a tiered, resilient cognitive engine.",
+	"type": "module",
+	"license": "MIT",
+	"keywords": [
+		"pi-package",
+		"soul-protocol",
+		"memory",
+		"identity",
+		"companion",
+		"cognitive-engine"
+	],
+	"pi": {
+		"extensions": ["src/pi/extension.ts"],
+		"skills": ["skills/soul-memory", "skills/soul-file"],
+		"prompts": ["prompts/remember.md", "prompts/recall.md", "prompts/soul-report.md"]
+	},
+	"files": [
+		"src",
+		"skills",
+		"prompts",
+		"scripts",
+		"vendor",
+		"tests",
+		"README.md",
+		"ENGINE.md",
+		"COVERAGE.md",
+		"PLAN.md",
+		"LICENSE",
+		"NOTICE"
+	],
+	"engines": {
+		"node": ">=22.6"
+	},
+	"scripts": {
+		"test": "node --test \"tests/**/*.test.ts\"",
+		"test:core": "node --test tests/spec.test.ts tests/runtime.test.ts tests/cognition.test.ts",
+		"test:engine": "node --test tests/resilience.test.ts tests/perf.test.ts",
+		"verify": "bash scripts/verify.sh",
+		"shs": "node scripts/shs.ts"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-ai": "*",
+		"@earendil-works/pi-coding-agent": "*",
+		"@earendil-works/pi-tui": "*",
+		"typebox": "*"
+	},
+	"devDependencies": {
+		"ajv": "^8.17.0",
+		"typebox": "^1.0.0"
+	}
+}

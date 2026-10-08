@@ -1,0 +1,45 @@
+# NOTICE
+
+`pi-soul-engine` — MIT License (see `LICENSE`).
+Copyright (c) 2026 pi-soul-engine contributors.
+
+## Upstream: the Soul Protocol
+
+This is an **independent implementation** of the Soul Protocol — an open
+standard for portable AI companion identity, memory, cognition and emotion —
+built as a Pi package. It is not a fork of the reference runtime; it is a
+TypeScript port plus a Pi-native integration layer.
+
+| | |
+|---|---|
+| Upstream project | https://github.com/qbtrix/soul-protocol |
+| Upstream commit | `b6ab6ee3bb644a6e27f08af551a155b37c7925c2` (2026-05-25) |
+| Upstream license | MIT — Copyright (c) 2026 OCEAN Foundation |
+| Whitepaper | https://soul.qbtrix.com/whitepaper.html |
+| File format | `SOUL-FORMAT-SPEC.md`, format version 1.0.0 |
+
+The `.soul` file format implemented here targets format version **1.0.0** as
+specified upstream. Interoperability is verified against the upstream JSON
+Schemas (`vendor/soul-protocol/schemas/`), which are copied verbatim and remain
+under the upstream MIT license — see `vendor/soul-protocol/ATTRIBUTION.md`.
+
+## Deliberate divergences from the reference runtime
+
+| Area | Reference runtime | This implementation |
+|---|---|---|
+| Language | Python 3.11+ | TypeScript (Node ≥ 22.6, runs via Pi's `jiti`) |
+| Interface | CLI (37 commands) + MCP server | Pi extension: lifecycle events, tools, `/` commands, skills, prompt templates |
+| Cognition | `CognitiveEngine` adapters + DSPy | Tiered resilient router (classifier → analysis → reasoning → session → heuristic) |
+| Context management | LCM subsystem | Pi's own compaction, plus a distillation hook |
+| Persistence | Inline file I/O | Detached child process (off Pi's event loop) |
+| Portability target | Python package | Pi package (`pi install`) |
+
+Where this implementation goes beyond the reference, it is documented in
+`COVERAGE.md` (what is covered, what is partial, what is out of scope) and
+`ENGINE.md` (the cognitive-engine strategy).
+
+## Vendored files
+
+`vendor/soul-protocol/` contains the upstream JSON Schemas, copied unmodified
+for offline conformance testing. They are MIT-licensed and are **not** modified
+by this project.

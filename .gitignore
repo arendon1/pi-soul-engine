@@ -1,0 +1,19 @@
+# dependencies (host-provided packages are peer deps; these are dev-only)
+node_modules/
+
+# soul data must never be committed: souls hold personal memory
+*.soul
+*.soul/
+**/souls/
+pending-observations.json
+bindings.json
+trust_chain/
+keys/
+
+# local verification artefacts
+coverage/
+*.log
+tmp/
+.DS_Store
+.idea/
+.vscode/
