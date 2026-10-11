@@ -3,6 +3,43 @@
 All notable changes to `pi-soul-engine`. This project targets `.soul` format
 version **1.0.0** (upstream Soul Protocol).
 
+## v0.2.1 — 2026-10-11
+
+- **Fixed:** `.npmrc` `omit=peer=true` → `omit=peer`. Newer npm rejects
+  the `=true` form with a warning ("Must be one or more of: dev,
+  optional, peer"). The install still worked because npm fell back,
+  but the warning was noise. Behavior is identical; only the syntax
+  changed.
+- **Docs:** `AGENTS.md` now has an explicit "Edit the source, never the
+  deployment" hard rule, with a note on the 2026-10-08 drift incident
+  that produced the catchup commit below.
+
+## v0.2.0 — 2026-10-11 (catchup release)
+
+This is the first tagged release. It is the version of the source
+repo after the catchup that brought it in line with the deployment.
+
+- **Added (catchup):** 4 files that existed in the deployment but were
+  missing from the source repo's HEAD:
+  - `AGENTS.md` — top-level deploy entry point
+  - `package-lock.json` — npm lockfile for reproducible installs
+  - `skills/soul-engine/SKILL.md` — third auto-loaded skill
+    (alongside `soul-memory` and `soul-file`)
+  - `src/pi/agent-bindings.ts` — subagent soul-binding dispatch logic
+- **Updated (catchup):** 9 files in the source repo's HEAD were behind
+  the deployment:
+  - `CHANGELOG.md`, `README.md`, `package.json`
+  - `src/pi/bridge.ts`, `src/pi/extension.ts`,
+    `src/pi/lifecycle.ts`, `src/pi/soul-manager.ts`
+  - `src/runtime/recall.ts` (BM25 lexical relevance gating)
+  - `src/util/text.ts` (BM25 helpers)
+- **Note on the catchup:** the source and deployment had drifted because
+  edits went directly into `~/pi-soul` instead of through the source
+  repo. They had unrelated git histories (no merge base). The catchup
+  is a content-only sync, not a merge. See the AGENTS.md "Edit the
+  source, never the deployment" hard rule for the process that prevents
+  this from recurring.
+
 ## [Unreleased]
 
 ### Added — top-level `AGENTS.md` entry point

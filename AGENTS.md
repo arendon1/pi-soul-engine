@@ -84,6 +84,20 @@ it needs there. The dependency-free test path (the default) is what
 These are the rules we have already hit and the runbook exists to keep
 us from hitting again.
 
+- **Edit the source, never the deployment.** The deployment at
+  `~/pi-soul` (or wherever the install target is) is a *derived* copy
+  produced by `git archive HEAD | tar -x`. If you edit files there, the
+  next `deploy.sh` run will silently overwrite your changes — and the
+  source repo will be out of date, with no record of what changed or
+  why. We hit this in production on 2026-10-08: the deployment got
+  ahead of the source, the source's working tree was also damaged
+  (58 files staged for deletion), and the catchup commit (`e404cdf`)
+  is the only reason the install is healthy today. The fix is process:
+  every change goes through the edit → commit → `deploy.sh` cycle
+  shown above. If you find yourself editing files under
+  `~/.pi/agent/extensions/` or `~/pi-soul/` directly, stop. Find the
+  source repo and edit there.
+
 - **One source of truth for resources.** `package.json#pi.prompts` lists
   the three `.md` files; the extension's `resources_discover` handler
   must return only `skillPaths`. Returning `promptPaths` from the handler
