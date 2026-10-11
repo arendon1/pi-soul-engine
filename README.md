@@ -11,6 +11,10 @@ each task to the cheapest adequate model. It interoperates with the upstream Pyt
 by-product of normal conversation — recall is injected before every prompt, exchanges are observed after
 every reply, and consolidation happens around compaction. Nothing needs to be asked for.
 
+> **For AI agents being told to deploy this:** start at **[AGENTS.md](./AGENTS.md)**. It has the
+> canonical install + verify path, the definition of a healthy install, and a pointer to the deeper
+> operational runbook at `skills/soul-engine/SKILL.md` (also auto-loaded by the extension).
+
 ## Requirements
 
 - **Node ≥ 22.6** — the detached worker is spawned as a plain `node` process running TypeScript via

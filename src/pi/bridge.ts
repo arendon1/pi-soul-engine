@@ -18,6 +18,7 @@ import type { Interaction } from "../spec/types.ts";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { newId } from "../util/ids.ts";
+import { detectBinding, loadAgentBindings, SESSION_SENTINEL, type AgentBinding } from "./agent-bindings.ts";
 
 export interface ObserveRecord {
 	timestamp: string;
@@ -40,6 +41,21 @@ export class SoulBridge {
 	observationsSinceReflect = 0;
 	/** Set on session_shutdown: background work continues, session writes stop. */
 	closed = false;
+
+	/**
+	 * Per-soul queue of stashed parents. Each entry is a `{ name, soul }` that
+	 * was active before a subagent swap. Subagents are dispatched LIFO, so this
+	 * is naturally a stack — only push when we actually swap, only pop when the
+	 * matching subagent ends.
+	 */
+	private soulStack: Array<{ name: string; soul: import("../runtime/soul.ts").Soul }> = [];
+	/**
+	 * Loaded once per session from the global agent .md files and the
+	 * `agent-soul-bindings.json` table. Null until the first call to
+	 * `loadAgentBindings()`. Resolved lazily so the bridge can be constructed
+	 * before the souls directory is fully ready.
+	 */
+	private agentBindings: Map<string, AgentBinding> | null = null;
 
 	private ctx: ExtensionContext | null = null;
 	/** Transcript entries are written through the ExtensionAPI, not the context. */
@@ -271,6 +287,83 @@ export class SoulBridge {
 
 	hasSoul(): boolean {
 		return this.manager.current() !== null;
+	}
+
+	// ── per-agent soul binding (subagent lifecycle) ────────────────────────
+
+	/**
+	 * Load the per-agent soul binding table from the global agent .md files
+	 * and `agent-soul-bindings.json`. Idempotent — safe to call repeatedly.
+	 */
+	ensureAgentBindingsLoaded(): void {
+		if (this.agentBindings) return;
+		this.agentBindings = loadAgentBindings(this.manager.root);
+	}
+
+	/**
+	 * Detect the agent type from a runtime system prompt and, if it has a
+	 * non-`$session` soul binding, swap to that soul for the dispatch. Returns
+	 * the binding that was applied, or null if no swap happened.
+	 *
+	 * Safe to call on every `before_agent_start`: the main agent's prompt
+	 * matches no fingerprint, so it returns null and the active soul stays put.
+	 */
+	detectAndPushSoul(systemPrompt: string): AgentBinding | null {
+		this.ensureAgentBindingsLoaded();
+		const binding = detectBinding(systemPrompt, this.agentBindings!);
+		if (!binding) return null;
+		if (binding.soul === SESSION_SENTINEL) return null;
+		// No-op if already on the bound soul (avoids redundant flush+reload).
+		if (this.manager.activeName === binding.soul) return binding;
+		const newSoul = this.pushSoul(binding.soul);
+		return newSoul ? binding : null;
+	}
+
+	/**
+	 * Push the current soul onto the stack and swap to `name` in-memory.
+	 * Flushes the current soul first so its in-flight writes do not land in the
+	 * wrong directory after the swap.
+	 */
+	pushSoul(name: string): import("../runtime/soul.ts").Soul | null {
+		const current = this.manager.current();
+		const currentName = this.manager.activeName;
+		if (current) {
+			this.soulStack.push({ name: currentName ?? "default", soul: current });
+		}
+		const swapped = this.manager.swapTo(name, this.getEngine());
+		if (swapped) {
+			swapped.setAnalysisService(this.analysisService);
+		}
+		return swapped;
+	}
+
+	/**
+	 * Pop the most recent soul off the stack and restore it as active. No-op
+	 * when the stack is empty (e.g. the main agent's own `agent_end`).
+	 */
+	popSoul(): import("../runtime/soul.ts").Soul | null {
+		const prev = this.soulStack.pop();
+		if (!prev) return null;
+		const restored = this.manager.swapTo(prev.name, this.getEngine());
+		if (restored) {
+			restored.setAnalysisService(this.analysisService);
+		}
+		return restored;
+	}
+
+	/**
+	 * Queue a `popSoul()` to run after every pending observe completes. The
+	 * swap and the observe share the same in-memory `activeName`, so popping
+	 * the stack *before* the observe runs would land the subagent's observation
+	 * in the parent soul. Queueing onto the same serial queue as `enqueueObserve`
+	 * fixes the ordering.
+	 */
+	enqueuePopSoul(): Promise<void> {
+		const next = this.queue.then(() => {
+			this.popSoul();
+		});
+		this.queue = next.catch(() => undefined);
+		return next;
 	}
 
 	domainOrNull(): string | null {

@@ -18,7 +18,8 @@
 		],
 		"skills": [
 			"skills/soul-memory",
-			"skills/soul-file"
+			"skills/soul-file",
+			"skills/soul-engine"
 		],
 		"prompts": [
 			"prompts/remember.md",

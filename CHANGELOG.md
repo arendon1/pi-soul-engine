@@ -5,6 +5,25 @@ version **1.0.0** (upstream Soul Protocol).
 
 ## [Unreleased]
 
+### Added — top-level `AGENTS.md` entry point
+- `AGENTS.md` at the repo root is the canonical "aim an agent here and
+  tell it to deploy" target. It contains the minimum commands to run,
+  the definition of a healthy install, the edit → commit → deploy cycle,
+  the hard rules that will break the install if violated, and a pointer
+  to `skills/soul-engine/SKILL.md` for deeper troubleshooting. A
+  one-line callout in `README.md` points new readers at it.
+
+### Added — soul-engine operational runbook (skill)
+- `skills/soul-engine/SKILL.md` — third auto-loaded skill, alongside
+  `soul-memory` and `soul-file`. Loaded via `package.json#pi.skills`. Documents
+  the four hard requirements for a healthy install (git repo, single-source
+  resource manifest, runtime engine config, worker spawn), the canonical
+  edit → commit → `deploy.sh --apply` → `verify.sh` workflow, a table of the
+  common breakage modes with their fixes, and the diagnostic ladder
+  (`verify.sh` → SHS → `soul_engine` → `git log`). Future agents see it
+  without being told, so the prompt-template collision, the dirty-tree
+  deploy error, and similar basics do not have to be re-debugged.
+
 ### Added — model-facing control surface (PLAN-TOOLS.md)
 - `soul_engine` (direct, read-only): cognitive-engine telemetry — active tiers,
   degradation, circuit breakers, budget, cache, token usage/cost, audit status.
@@ -39,6 +58,17 @@ version **1.0.0** (upstream Soul Protocol).
   souls already corrupted by the two bugs above. Exposed as
   `soul_admin { action: "prune_entities" }`; self-model domains always survive, so
   `research_aide` is kept while `Knob` is removed.
+
+### Fixed — prompt template collision on install
+- `src/pi/extension.ts` no longer returns `promptPaths` from the
+  `resources_discover` handler. `package.json#pi.prompts` is now the single
+  source of truth. Previously the manifest listed the three `.md` files while
+  the handler returned the containing directory, so each template was loaded
+  twice and Pi's `dedupePrompts` emitted a `name "/recall" collision` warning
+  per template. Skills keep their dynamic registration (no equivalent
+  collision, and it covers bare-extension trial loads). Bare-extension loads
+  (`pi --extension src/pi/extension.ts`) no longer ship prompt templates —
+  the documented install path is `pi install`.
 
 ## [0.2.0] — 2026-10-08
 

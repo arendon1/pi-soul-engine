@@ -4,6 +4,7 @@
  */
 import type { MemoryEntry, Personality } from "../spec/types.ts";
 import { activationOf } from "./activation.ts";
+import { bm25, tokenize } from "../util/text.ts";
 import type { MemoryStore, StoreQuery } from "./store.ts";
 
 export interface RecallHit {
@@ -46,22 +47,37 @@ function personalityWeight(entry: MemoryEntry, p: Personality | undefined): numb
 
 export function recall(store: MemoryStore, query: string, options: RecallOptions = {}): RecallHit[] {
 	const limit = options.limit ?? 5;
-	const pool: StoreQuery = {
-		query,
-		limit: 200,
-		user_id: options.user_id ?? null,
-		domain: options.domain ?? null,
-	};
-	void pool;
 	const candidates = store.filter({
 		user_id: options.user_id ?? null,
 		domain: options.domain ?? null,
 	});
+	// BM25 over the whole pool gives IDF-weighted lexical relevance; the raw
+	// tokenOverlap used by `spreading` saturates for short queries, so relevance
+	// here gates activation instead of merely tying it.
+	const queryTokens = tokenize(query);
+	const docs = candidates.map((e) => tokenize(`${e.content} ${e.entities.join(" ")}`));
+	const df = new Map<string, number>();
+	for (const doc of docs) {
+		for (const token of new Set(doc)) df.set(token, (df.get(token) ?? 0) + 1);
+	}
+	const avgLen = docs.length > 0 ? docs.reduce((n, d) => n + d.length, 0) / docs.length : 0;
+	const lexScores = candidates.map((entry, i) => {
+		const raw = bm25(queryTokens, docs[i]!, avgLen, candidates.length, df);
+		return raw / (raw + 1); // squash to 0..1
+	});
+	const maxLex = Math.max(0.0001, ...lexScores);
 	const hits: RecallHit[] = [];
-	for (const entry of candidates) {
+	for (let i = 0; i < candidates.length; i++) {
+		const entry = candidates[i]!;
 		const parts = activationOf(entry, query);
+		const lex = lexScores[i]! / maxLex; // 0..1, query-differentiating
+		// Zero lexical signal → heavy penalty so pure-recency entries can only
+		// surface when nothing in the pool matches the query.
+		const relevanceGate = lex > 0 ? 0.3 + 0.7 * lex : 0.05;
 		const importancePrior = entry.importance / 100; // small stable tiebreaker
-		const score = parts.activation * personalityWeight(entry, options.personality) + importancePrior;
+		const score =
+			parts.activation * personalityWeight(entry, options.personality) * relevanceGate +
+			importancePrior * (0.1 + 0.4 * lex);
 		hits.push({ entry, activation: parts.activation, score, parts });
 	}
 	hits.sort((a, b) => b.score - a.score);

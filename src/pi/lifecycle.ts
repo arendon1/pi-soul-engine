@@ -79,6 +79,15 @@ export function registerSoulLifecycle(pi: ExtensionAPI, bridge: SoulBridge): voi
 	pi.on("before_agent_start", (event: BeforeAgentStartEvent) => {
 		// Pure in-memory recall + section building — microseconds, no I/O.
 		if (!bridge.hasSoul()) return;
+		// Detect the agent type from the runtime system prompt and swap to its
+		// bound soul, if any. Runs before injection so the soul sections are
+		// built from the *subagent's* soul, not the parent's. The main agent's
+		// prompt matches no fingerprint, so the active soul stays put.
+		try {
+			bridge.detectAndPushSoul(event.systemPrompt);
+		} catch {
+			/* never block the agent on soul errors */
+		}
 		try {
 			const soul = bridge.soul();
 			const config = bridge.manager.getConfig();
@@ -95,8 +104,14 @@ export function registerSoulLifecycle(pi: ExtensionAPI, bridge: SoulBridge): voi
 		// Fire-and-forget: the observe pipeline runs in the background; message
 		// flow and run settlement continue without it.
 		const exchange = exchangeOf(event);
-		if (!exchange) return;
-		void bridge.enqueueObserve(exchange.userText, exchange.agentText).catch(() => undefined);
+		if (exchange) {
+			void bridge.enqueueObserve(exchange.userText, exchange.agentText).catch(() => undefined);
+		}
+		// Queue a pop on the same serial queue as the observe, so the subagent's
+		// observation lands in the *subagent's* soul before the parent is
+		// restored. The main agent's own agent_end has an empty stack, so the
+		// pop is a no-op there.
+		void bridge.enqueuePopSoul().catch(() => undefined);
 	});
 
 	pi.on("agent_before_settle", (event: AgentBeforeSettleEvent, ctx: ExtensionContext) => {

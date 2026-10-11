@@ -1,6 +1,6 @@
 /**
  * Text utilities shared by spec + runtime: tokenization, overlap, keywords.
- * Deterministic and dependency-free (heuristicEngine + BM25 rely on these).
+ * Deterministic and dependency-free (heuristicEngine + recall gating rely on these).
  */
 
 const STOPWORDS = new Set([
@@ -33,6 +33,36 @@ export function tokenOverlap(query: string, content: string): number {
 	let shared = 0;
 	for (const token of a) if (b.has(token)) shared++;
 	return shared / Math.min(a.size, b.size);
+}
+
+/**
+ * BM25 (Okapi) lexical relevance between a tokenized query and a document.
+ * k1=1.2, b=0.75 — standard parameters, deterministic, dependency-free.
+ * `df` maps token → document frequency across the candidate pool.
+ */
+export function bm25(
+	queryTokens: string[],
+	docTokens: string[],
+	avgDocLen: number,
+	nDocs: number,
+	df: Map<string, number>,
+): number {
+	const k1 = 1.2;
+	const b = 0.75;
+	if (queryTokens.length === 0 || docTokens.length === 0 || nDocs === 0) return 0;
+	const counts = new Map<string, number>();
+	for (const token of docTokens) counts.set(token, (counts.get(token) ?? 0) + 1);
+	let score = 0;
+	for (const token of queryTokens) {
+		const freq = counts.get(token);
+		if (!freq) continue;
+		const docFreq = df.get(token) ?? 0;
+		const idf = Math.log(1 + (nDocs - docFreq + 0.5) / (docFreq + 0.5));
+		const norm = (freq * (k1 + 1)) /
+			(freq + k1 * (1 - b + (b * docTokens.length) / Math.max(avgDocLen, 1)));
+		score += idf * norm;
+	}
+	return score;
 }
 
 /** Simple keyword extraction: most frequent non-stopword tokens. */

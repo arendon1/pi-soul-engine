@@ -97,7 +97,7 @@ export class SoulManager {
 	private config: SoulManagerConfig;
 	private bindings: Record<string, SoulBinding> = {};
 	private soul: Soul | null = null;
-	private activeName: string | null = null;
+	private _activeName: string | null = null;
 	private dirty = false;
 	private saveTimer: ReturnType<typeof setTimeout> | null = null;
 	/**
@@ -188,13 +188,18 @@ export class SoulManager {
 				bondedTo: "human",
 				engine,
 			} satisfies BirthOptions);
-			this.activeName = binding.soul;
+			this._activeName = binding.soul;
 			this.bind(cwd, binding.soul); // persist the project binding
 			this.saveNow();
 		}
-		this.activeName = binding.soul;
+		this._activeName = binding.soul;
 		this.soul.setEngine(engine);
 		return this.soul;
+	}
+
+	/** The name of the currently-active soul (the one writes will land in). */
+	get activeName(): string | null {
+		return this._activeName;
 	}
 
 	current(): Soul | null {
@@ -203,8 +208,8 @@ export class SoulManager {
 
 	birth(cwd: string, options: BirthOptions, engine: CognitiveEngine): Soul {
 		this.soul = Soul.birth({ ...options, engine });
-		this.activeName = soulSlug(options.name);
-		this.bind(cwd, this.activeName);
+		this._activeName = soulSlug(options.name);
+		this.bind(cwd, this._activeName);
 		this.saveNow();
 		return this.soul;
 	}
@@ -214,8 +219,27 @@ export class SoulManager {
 		if (!existsSync(join(dir, "soul.json"))) return null;
 		this.flush();
 		this.soul = Soul.awaken({ dir }, engine);
-		this.activeName = name;
+		this._activeName = name;
 		this.bind(cwd, name);
+		return this.soul;
+	}
+
+	/**
+	 * Swap the active soul in-memory for a subagent dispatch.
+	 *
+	 * Unlike `switchTo`, this does NOT mutate the project's cwd binding in
+	 * `bindings.json` — a subagent dispatch is transient, and writing its soul
+	 * as the project's binding would mean the next session on this cwd wakes
+	 * up in the wrong soul. The swap is scoped to this process's lifetime.
+	 *
+	 * Returns null if `name` does not exist on disk.
+	 */
+	swapTo(name: string, engine: CognitiveEngine): Soul | null {
+		const dir = this.soulDir(name);
+		if (!existsSync(join(dir, "soul.json"))) return null;
+		this.flush();
+		this.soul = Soul.awaken({ dir }, engine);
+		this._activeName = name;
 		return this.soul;
 	}
 
@@ -223,8 +247,8 @@ export class SoulManager {
 	bindImported(cwd: string, name: string, soul: Soul): void {
 		this.flush();
 		this.soul = soul;
-		this.activeName = soulSlug(name);
-		this.bind(cwd, this.activeName);
+		this._activeName = soulSlug(name);
+		this.bind(cwd, this._activeName);
 		this.saveNow();
 	}
 
@@ -241,7 +265,7 @@ export class SoulManager {
 
 	saveNow(): void {
 		if (!this.soul) return;
-		const dir = this.soulDir(this.activeName ?? soulSlug(this.soul.config.identity.name));
+		const dir = this.soulDir(this._activeName ?? soulSlug(this.soul.config.identity.name));
 		const doc = this.soul.toDocument();
 		if (this.persistSink) {
 			this.persistSink(dir, doc);
